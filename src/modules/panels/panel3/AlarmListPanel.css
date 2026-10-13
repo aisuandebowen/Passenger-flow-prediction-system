@@ -1,0 +1,70 @@
+/* 小面板 3：实时告警列表样式 */
+
+.alarm-count {
+  color: var(--dv-warning);
+}
+
+.alarm-list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.alarm-list__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 30px;
+  border-bottom: 1px solid var(--dv-panel-border);
+  color: var(--dv-sub);
+  font-size: 0.75em;
+}
+
+.alarm-list__viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.alarm-list__body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.alarm-list__row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px dashed rgba(120, 158, 255, 0.12);
+}
+
+.alarm-list__row:hover {
+  background: rgba(48, 97, 219, 0.1);
+}
+
+.alarm-list__cell {
+  padding: 0 4px;
+  font-size: 0.75em;
+  color: var(--dv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alarm-list__cell--head {
+  font-size: 0.75em;
+  color: var(--dv-sub);
+}
+
+.alarm-list__level {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid;
+  border-radius: 3px;
+  font-size: 0.6875em;
+  line-height: 1.4;
+}

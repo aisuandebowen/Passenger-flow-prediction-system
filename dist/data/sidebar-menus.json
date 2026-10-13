@@ -1,0 +1,59 @@
+[
+ {
+  "id": "monitor",
+  "title": "客流监测",
+  "icon": "chart",
+  "children": [
+   {
+    "id": "realtime",
+    "title": "实时客流"
+   },
+   {
+    "id": "history",
+    "title": "历史客流"
+   },
+   {
+    "id": "forecast",
+    "title": "客流预测"
+   }
+  ]
+ },
+ {
+  "id": "network",
+  "title": "线网管理",
+  "icon": "network",
+  "children": [
+   {
+    "id": "line-status",
+    "title": "线路状态"
+   },
+   {
+    "id": "station-manage",
+    "title": "车站管理"
+   },
+   {
+    "id": "train-tracking",
+    "title": "列车追踪"
+   }
+  ]
+ },
+ {
+  "id": "dispatch",
+  "title": "应急指挥",
+  "icon": "alert",
+  "children": [
+   {
+    "id": "alarm-center",
+    "title": "告警中心"
+   },
+   {
+    "id": "plan-manage",
+    "title": "预案管理"
+   },
+   {
+    "id": "event-log",
+    "title": "事件记录"
+   }
+  ]
+ }
+]

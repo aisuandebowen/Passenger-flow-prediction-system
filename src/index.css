@@ -1,0 +1,55 @@
+/* 全局样式 —— 把 theme.ts 的颜色映射成 CSS 变量，供所有模块使用 */
+
+:root {
+  --dv-bg: #020206;
+  --dv-primary: #3061db;
+  --dv-accent: #789eff;
+  --dv-title: #e8efff;
+  --dv-text: #bdcfff;
+  --dv-sub: rgba(255, 255, 255, 0.55);
+  --dv-panel-bg: rgba(4, 20, 36, 0.72);
+  --dv-panel-border: rgba(120, 158, 255, 0.33);
+  --dv-od-line: #8fc2ff;
+  --dv-station: #bdcfff;
+  --dv-transfer: #ffd166;
+  --dv-danger: #ea580c;
+  --dv-warning: #ffa800;
+  /* 字号基准（实际值由 App 舞台的 inline font-size 覆盖，这里给个默认回落） */
+  --dv-font-base: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--dv-bg);
+  color: var(--dv-text);
+  font-family: "PingFang SC", "Microsoft YaHei", "pmzd", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 158, 255, 0.35);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

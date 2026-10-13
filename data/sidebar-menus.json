@@ -1,0 +1,56 @@
+[
+  {
+    "id": "network",
+    "title": "线网管理",
+    "icon": "network",
+    "children": [
+      {
+        "id": "line-status",
+        "title": "线路状态"
+      },
+      {
+        "id": "station-manage",
+        "title": "车站管理"
+      }
+    ]
+  },
+  {
+    "id": "monitor",
+    "title": "节假日检测",
+    "icon": "chart",
+    "children": [
+      {
+        "id": "realtime",
+        "title": "五一节"
+      },
+      {
+        "id": "history",
+        "title": "端午节"
+      },
+      {
+        "id": "forecast",
+        "title": "中秋节"
+      }
+    ]
+  },
+
+  {
+    "id": "dispatch",
+    "title": "大型活动",
+    "icon": "alert",
+    "children": [
+      {
+        "id": "alarm-center",
+        "title": "邓紫棋演唱会"
+      },
+      {
+        "id": "plan-manage",
+        "title": "周杰伦演唱会"
+      },
+      {
+        "id": "event-log",
+        "title": "冰雪节"
+      }
+    ]
+  }
+]

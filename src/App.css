@@ -1,0 +1,25 @@
+/* App 主布局样式 */
+
+.app {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--dv-bg);
+}
+
+/* 设计稿画布：1920x1080，整体等比缩放 */
+.app__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  overflow: hidden;
+}
+
+/* 中央地图区：两侧之间的可视区域，不遮挡侧栏与面板 */
+.app__map {
+  position: absolute;
+  z-index: 1;
+}

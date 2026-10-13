@@ -1,0 +1,308 @@
+{
+ "title": "实时告警信息",
+ "columns": [
+  {
+   "title": "站点",
+   "dataIndex": "station",
+   "width": "28%"
+  },
+  {
+   "title": "类型",
+   "dataIndex": "type",
+   "width": "30%"
+  },
+  {
+   "title": "级别",
+   "dataIndex": "level",
+   "width": "16%"
+  },
+  {
+   "title": "时间",
+   "dataIndex": "time",
+   "width": "26%",
+   "align": "right"
+  }
+ ],
+ "data": [
+  {
+   "station": "西单",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "08:00",
+   "levelType": "danger"
+  },
+  {
+   "station": "国贸",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "09:01",
+   "levelType": "warning"
+  },
+  {
+   "station": "西直门",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "010:02",
+   "levelType": "normal"
+  },
+  {
+   "station": "雍和宫",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "011:03",
+   "levelType": "danger"
+  },
+  {
+   "station": "王府井",
+   "type": "列车晚点",
+   "level": "较重",
+   "time": "012:04",
+   "levelType": "warning"
+  },
+  {
+   "station": "东直门",
+   "type": "屏蔽门告警",
+   "level": "一般",
+   "time": "013:05",
+   "levelType": "normal"
+  },
+  {
+   "station": "朝阳门",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "014:06",
+   "levelType": "danger"
+  },
+  {
+   "station": "望京西",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "015:07",
+   "levelType": "warning"
+  },
+  {
+   "station": "奥林匹克公园",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "016:08",
+   "levelType": "normal"
+  },
+  {
+   "station": "北京南站",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "017:09",
+   "levelType": "danger"
+  },
+  {
+   "station": "西单",
+   "type": "列车晚点",
+   "level": "较重",
+   "time": "018:10",
+   "levelType": "warning"
+  },
+  {
+   "station": "国贸",
+   "type": "屏蔽门告警",
+   "level": "一般",
+   "time": "019:11",
+   "levelType": "normal"
+  },
+  {
+   "station": "西直门",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "08:12",
+   "levelType": "danger"
+  },
+  {
+   "station": "雍和宫",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "09:13",
+   "levelType": "warning"
+  },
+  {
+   "station": "王府井",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "010:14",
+   "levelType": "normal"
+  },
+  {
+   "station": "东直门",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "011:15",
+   "levelType": "danger"
+  },
+  {
+   "station": "朝阳门",
+   "type": "列车晚点",
+   "level": "较重",
+   "time": "012:16",
+   "levelType": "warning"
+  },
+  {
+   "station": "望京西",
+   "type": "屏蔽门告警",
+   "level": "一般",
+   "time": "013:17",
+   "levelType": "normal"
+  },
+  {
+   "station": "奥林匹克公园",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "014:18",
+   "levelType": "danger"
+  },
+  {
+   "station": "北京南站",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "015:19",
+   "levelType": "warning"
+  },
+  {
+   "station": "西单",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "016:20",
+   "levelType": "normal"
+  },
+  {
+   "station": "国贸",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "017:21",
+   "levelType": "danger"
+  },
+  {
+   "station": "西直门",
+   "type": "列车晚点",
+   "level": "较重",
+   "time": "018:22",
+   "levelType": "warning"
+  },
+  {
+   "station": "雍和宫",
+   "type": "屏蔽门告警",
+   "level": "一般",
+   "time": "019:23",
+   "levelType": "normal"
+  },
+  {
+   "station": "王府井",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "08:24",
+   "levelType": "danger"
+  },
+  {
+   "station": "东直门",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "09:25",
+   "levelType": "warning"
+  },
+  {
+   "station": "朝阳门",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "010:26",
+   "levelType": "normal"
+  },
+  {
+   "station": "望京西",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "011:27",
+   "levelType": "danger"
+  },
+  {
+   "station": "奥林匹克公园",
+   "type": "列车晚点",
+   "level": "较重",
+   "time": "012:28",
+   "levelType": "warning"
+  },
+  {
+   "station": "北京南站",
+   "type": "屏蔽门告警",
+   "level": "一般",
+   "time": "013:29",
+   "levelType": "normal"
+  },
+  {
+   "station": "西单",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "014:30",
+   "levelType": "danger"
+  },
+  {
+   "station": "国贸",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "015:31",
+   "levelType": "warning"
+  },
+  {
+   "station": "西直门",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "016:32",
+   "levelType": "normal"
+  },
+  {
+   "station": "雍和宫",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "017:33",
+   "levelType": "danger"
+  },
+  {
+   "station": "王府井",
+   "type": "列车晚点",
+   "level": "较重",
+   "time": "018:34",
+   "levelType": "warning"
+  },
+  {
+   "station": "东直门",
+   "type": "屏蔽门告警",
+   "level": "一般",
+   "time": "019:35",
+   "levelType": "normal"
+  },
+  {
+   "station": "朝阳门",
+   "type": "大客流预警",
+   "level": "紧急",
+   "time": "08:36",
+   "levelType": "danger"
+  },
+  {
+   "station": "望京西",
+   "type": "设备故障",
+   "level": "较重",
+   "time": "09:37",
+   "levelType": "warning"
+  },
+  {
+   "station": "奥林匹克公园",
+   "type": "信号异常",
+   "level": "一般",
+   "time": "010:38",
+   "levelType": "normal"
+  },
+  {
+   "station": "北京南站",
+   "type": "限流通知",
+   "level": "紧急",
+   "time": "011:39",
+   "levelType": "danger"
+  }
+ ]
+}
