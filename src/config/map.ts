@@ -24,6 +24,13 @@ export interface MapConfig {
   od: {
     enabled: boolean;
   };
+  /**
+   * 初始视野缩放倍数（也是「复位视野」按钮回到的层级）。
+   *   1 = 整座城市铺满地图区（默认全图，城区线网会显得较小）
+   *   2 ~ 3 = 以线网聚集区为中心适当放大（推荐）
+   * 初次打开觉得地图太小就调大这个值；想默认看全城就调回 1。
+   */
+  initialZoom: number;
 }
 
 export const mapConfig: MapConfig = {
@@ -32,4 +39,5 @@ export const mapConfig: MapConfig = {
   od: {
     enabled: true,
   },
+  initialZoom: 2.4,
 };

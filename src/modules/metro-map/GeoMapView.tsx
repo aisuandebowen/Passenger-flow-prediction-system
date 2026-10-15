@@ -86,6 +86,8 @@ export const FULL_K = 1.6;
 const SAMPLE_COUNT = 8;
 /** 站名标签网格去重的格子边长（屏幕 px） */
 const LABEL_CELL = 78;
+/** 站点点击命中半径（屏幕 px） */
+const HIT_RADIUS = 22;
 
 const OD_ANIM = {
   dashSpeed: 60,
@@ -108,6 +110,8 @@ export interface GeoMapViewProps {
   /** 只显示这些线路 id；null = 全部 */
   visibleLines: string[] | null;
   odEnabled: boolean;
+  /** 初始视野缩放倍数（1 = 全城铺满；也是「复位视野」按钮回到的层级） */
+  initialZoom: number;
 }
 
 export default function GeoMapView(props: GeoMapViewProps) {
@@ -154,19 +158,33 @@ export default function GeoMapView(props: GeoMapViewProps) {
   );
 
   const [view, setView] = useState<ViewState | null>(null);
-  // 城市/边界数据就绪或变化时，把视野重置到包围盒中心（保证全城完整可见）；窗口尺寸变化不重置
-  const boxCenter = useMemo<[number, number]>(
-    () => [(worldBox.minX + worldBox.maxX) / 2, (worldBox.minY + worldBox.maxY) / 2],
-    [worldBox]
-  );
+  // 初始/复位视野：以线网聚集区（站点包围盒）为中心，缩放取 mapConfig.initialZoom，
+  // 避免全城视图下城区线网显得过小。窗口尺寸变化不重置。
+  const homeView = useMemo<ViewState>(() => {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const s of city.stations) {
+      const [wx, wy] = projectLngLat(s.lng, s.lat);
+      if (wx < minX) minX = wx;
+      if (wy < minY) minY = wy;
+      if (wx > maxX) maxX = wx;
+      if (wy > maxY) maxY = wy;
+    }
+    const k = Math.max(K_MIN, Math.min(K_MAX, props.initialZoom));
+    return {
+      cx: isFinite(minX) ? (minX + maxX) / 2 : (worldBox.minX + worldBox.maxX) / 2,
+      cy: isFinite(minY) ? (minY + maxY) / 2 : (worldBox.minY + worldBox.maxY) / 2,
+      k,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city.cityId, props.initialZoom, districts, worldBox]);
   const worldKey = `${city.cityId}:${districts ? districts.length : "loading"}`;
   const prevWorldKey = useRef<string | null>(null);
   useEffect(() => {
     if (fit.s <= 0) return;
     if (prevWorldKey.current === worldKey && view) return;
     prevWorldKey.current = worldKey;
-    setView({ cx: boxCenter[0], cy: boxCenter[1], k: 1 });
-  }, [worldKey, fit.s, boxCenter, view]);
+    setView(homeView);
+  }, [worldKey, fit.s, homeView, view]);
   const viewRef = useRef<ViewState | null>(null);
   viewRef.current = view;
 
@@ -238,6 +256,21 @@ export default function GeoMapView(props: GeoMapViewProps) {
   }, [stations, city.cityId]);
   const sampleNames = useMemo(() => new Set(sampleStations.map((s) => s.name)), [sampleStations]);
 
+  // ---- 站点命中测试：返回半径 HIT_RADIUS 内最近的站点名（抽样模式下只测抽样站） ----
+  const nearestStation = (x: number, y: number, k: number): string | null => {
+    const pool = k <= SAMPLE_K ? positioned.filter(({ s }) => sampleNames.has(s.name)) : positioned;
+    let best: string | null = null;
+    let bestDist = HIT_RADIUS;
+    for (const { s, p } of pool) {
+      const dist = Math.hypot(p[0] - x, p[1] - y);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = s.name;
+      }
+    }
+    return best;
+  };
+
   // ---- 指针交互（拖拽平移 + 点击选择） ----
   const drag = useRef<{ id: number; sx: number; sy: number; moved: boolean } | null>(null);
 
@@ -250,6 +283,8 @@ export default function GeoMapView(props: GeoMapViewProps) {
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (!view || (e.target as Element).closest(".mm-popup")) return;
+    const el = containerRef.current;
+    if (el) el.style.cursor = ""; // 交还 CSS 的 grab/grabbing
     const [x, y] = toLocal(e);
     drag.current = { id: e.pointerId, sx: x, sy: y, moved: false };
     try {
@@ -261,6 +296,13 @@ export default function GeoMapView(props: GeoMapViewProps) {
 
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
+    // 未拖拽时做悬停命中测试：悬停在站点上显示手型光标
+    if (!d && view) {
+      const [x, y] = toLocal(e);
+      const near = nearestStation(x, y, view.k);
+      const el = containerRef.current;
+      if (el) el.style.cursor = near ? "pointer" : "";
+    }
     if (!d || !view || d.id !== e.pointerId) return;
     const [x, y] = toLocal(e);
     const dx = x - d.sx;
@@ -277,19 +319,9 @@ export default function GeoMapView(props: GeoMapViewProps) {
     const d = drag.current;
     drag.current = null;
     if (!d || !view || d.id !== e.pointerId || d.moved) return;
-    // 视为点击：命中检测半径 12px 内最近的站点
+    // 视为点击：命中 HIT_RADIUS 半径内最近的站点
     const [x, y] = toLocal(e);
-    let best: string | null = null;
-    let bestDist = 12;
-    const pool = view.k <= SAMPLE_K ? positioned.filter(({ s }) => sampleNames.has(s.name)) : positioned;
-    for (const { s, p } of pool) {
-      const dist = Math.hypot(p[0] - x, p[1] - y);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = s.name;
-      }
-    }
-    props.onSelect(best);
+    props.onSelect(nearestStation(x, y, view.k));
   };
 
   // ---- 滚轮缩放（非 passive 才能 preventDefault） ----
@@ -513,7 +545,7 @@ export default function GeoMapView(props: GeoMapViewProps) {
         <button className="mm-ctrl-btn" title="缩小" onClick={() => zoomAt(1 / 1.5)}>
           －
         </button>
-        <button className="mm-ctrl-btn" title="复位视野" onClick={() => setView({ cx: boxCenter[0], cy: boxCenter[1], k: 1 })}>
+        <button className="mm-ctrl-btn" title="复位视野" onClick={() => setView(homeView)}>
           ⌂
         </button>
       </div>

@@ -49,7 +49,7 @@ import MetroMap from "@/modules/metro-map/MetroMap";
 
 ## 修改
 
-### 切城市 / 只显示部分线路 / OD 开关
+### 切城市 / 只显示部分线路 / OD 开关 / 初始视野
 
 `src/config/map.ts`：
 
@@ -58,8 +58,12 @@ export const mapConfig = {
   city: "beijing",            // 初始城市（"beijing" | "qingdao"）
   visibleLines: null,         // ["M1","M2"] 只画这几条；null = 全部
   od: { enabled: true },
+  initialZoom: 2.4,           // 初始视野缩放倍数：1 = 全城铺满；调大=放大城区线网（也是"复位"层级）
 };
 ```
+
+> 初始视野以**线网聚集区**为中心（而非全城边界中心），`initialZoom` 越大城区越大。
+> 觉得打开时地图太小 → 调大 `initialZoom`；想默认看全城 → 改回 `1`。
 
 运行时切换城市用地图右上角的「北京 / 青岛」按钮（城市清单在 `MetroMap.tsx` 的 `CITIES`）。
 
@@ -68,12 +72,13 @@ export const mapConfig = {
 `GeoMapView.tsx` 顶部常量：
 
 ```ts
-const K_MIN = 0.5;      // 缩放下限（1 = 全城铺满视野）
-const K_MAX = 16;       // 缩放上限
-const SAMPLE_K = 0.8;   // ≤ 此缩放进入"随机抽样"模式
-const FULL_K = 1.6;     // ≥ 此缩放显示视野内全部站名
-const SAMPLE_COUNT = 8; // 抽样模式的站点数
-const LABEL_CELL = 78;  // 站名防重叠网格边长（px）
+const K_MIN = 0.5;       // 缩放下限（1 = 全城铺满视野）
+const K_MAX = 16;        // 缩放上限
+const SAMPLE_K = 0.8;    // ≤ 此缩放进入"随机抽样"模式
+const FULL_K = 1.6;      // ≥ 此缩放显示视野内全部站名
+const SAMPLE_COUNT = 8;  // 抽样模式的站点数
+const LABEL_CELL = 78;   // 站名防重叠网格边长（px）
+const HIT_RADIUS = 22;   // 站点点击命中半径（px），嫌点不中就调大
 ```
 
 ### 改 OD 光线

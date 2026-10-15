@@ -72,6 +72,7 @@ export default function MetroMap() {
           onSelect={setSelection}
           visibleLines={mapConfig.visibleLines}
           odEnabled={mapConfig.od.enabled}
+          initialZoom={mapConfig.initialZoom}
         />
       )}
 
