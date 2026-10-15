@@ -8,34 +8,42 @@
 
 一座城市一个 JSON，详见 `metro-cities/README.md`（含怎么新增城市、怎么换右侧面板站名）。
 
-- `beijing.json`：北京，矢量模式，30 条线路、447 站、104 个换乘站，官方配色，坐标取自真实线网图
-- `qingdao.json` + `qingdao-map.jpg`：青岛，图片模式（直接贴官方线网图）
+- `beijing.json`：北京，真实地理模式（geo），26 条线路、406 站、104 个换乘站，真实经纬度 + 官方线路色
+- `qingdao.json`：青岛，真实地理模式（geo），8 条线路、176 站、17 个换乘站，真实经纬度 + 官方线路色
+- `geo/<城市>-districts.json`：城市行政区划边界 GeoJSON（DataV.GeoAtlas），作地图底图
 
-切换城市 / 只显示部分线路：改 `src/config/map.ts`。
+站点真实性：站名、站序、站数逐线对照北京地铁官网/官方线网图与百科词条核验；
+坐标来自 OpenStreetMap。切换城市 / 只显示部分线路：改 `src/config/map.ts`。
 
 ```jsonc
 {
   "city": "北京",
-  "mode": "vector",                     // "vector" 矢量 | "image" 贴图
+  "cityId": "beijing",
+  "mode": "geo",                        // 真实地理模式（经纬度 + 边界底图）
+  "boundary": "./data/metro-cities/geo/beijing-districts.json",
+  "center": [116.29, 40.05],            // 备用视野中心（组件按数据包围盒自动居中）
   "lines": [
     {
       "id": "M1",                       // 线路 id（配置里过滤线路用它）
-      "name": "1号线",                  // 显示名
-      "color": "#c23a30",               // 线路色
-      "path": [[100,200],[100,300]],    // 线路折线点序列 [x,y]
-      "stations": [                     // 途经站点
-        { "name": "苹果园", "x": 100, "y": 200, "transfer": false, "label": true }
+      "name": "1号线八通线",             // 显示名
+      "color": "#C33831",               // 官方线路色
+      "loop": false,                    // 环线（如 2 号线/10 号线为 true）
+      "stations": [                     // 途经站点（真实经纬度，按站序排列）
+        { "name": "苹果园", "lng": 116.171628, "lat": 39.924597 }
       ]
     }
   ],
+  "stations": [                          // 全局去重站点（画点/点击/改色用）
+    { "name": "西单", "lng": 116.374, "lat": 39.906, "lines": ["M1", "M4"], "transfer": true }
+  ],
   "od": {
-    "hub":  { "name": "天安门西", "x": 824, "y": 727 },   // 光线发射枢纽
-    "flows": [ { "name": "西直门", "x": 698, "y": 554, "value": 8500 } ]
+    "hub":  { "name": "天安门西", "lng": 116.385, "lat": 39.906 },   // 光线发射枢纽
+    "flows": [ { "name": "西直门", "lng": 116.349, "lat": 39.939, "value": 8500 } ]
   }
 }
 ```
 
-坐标是任意平面坐标系（x 向右增、y 向下增），不需要经纬度，模块自动缩放居中。
+坐标是真实经纬度（WGS84），模块经 Web 墨卡托投影绘制；`od.flows[].value` 为演示数据。
 
 ### sidebar-menus.json — 侧边栏菜单
 

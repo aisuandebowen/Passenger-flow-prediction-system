@@ -1,70 +1,88 @@
 # 城市线网数据（data/metro-cities/）
 
-中央地图模块（`src/modules/metro-map`）的数据目录。**一座城市一个 JSON 文件**，文件名就是城市 id。
+中央地图模块（`src/modules/metro-map`）的数据目录。**一座城市一个 JSON 文件**，文件名就是城市 id，
+另加该城市的行政区划边界 GeoJSON 作地图底图。
 
 ```
 data/metro-cities/
-├── beijing.json        # 北京（矢量模式：线路折线 + 站点坐标，真实线网数据）
-├── qingdao.json        # 青岛（图片模式：直接贴官方线网图作背景）
-├── qingdao-map.jpg     # 青岛线网图本体（图片模式引用）
-└── README.md           # 本文件
+├── beijing.json               # 北京（26 条线 / 406 站，真实经纬度）
+├── qingdao.json               # 青岛（8 条线 / 176 站，真实经纬度）
+├── geo/
+│   ├── beijing-districts.json # 北京 16 区边界（DataV.GeoAtlas，含区县界）
+│   └── qingdao-districts.json # 青岛 10 区边界（含真实海岸线）
+└── README.md                  # 本文件
 ```
+
+## 数据真实性（核验说明）
+
+- **坐标**：全部来自 OpenStreetMap 的真实地理坐标（WGS84 经纬度），并做了"站点落在城市边界内"的程序化校验。
+- **站名 / 站序 / 站数**：逐线路与权威来源交叉核验——
+  - 北京：北京地铁官网（bjsubway.com）线路车站表逐站比对；官方《北京城市轨道交通线网图》（2026 年 6 月版）
+    用于核对官方线路色与线路清单；3/12/14/16/17/燕房线等对照百科词条（暂缓开通/在建站已剔除，如 14 号线红庙站）。
+  - 青岛：1/2/3/4/6/8/11(蓝谷快线)/13(西海岸快线) 全部 8 条线路与百科词条车站列表逐站一致。
+  - 未开通线路不收录（如北京 18 号线以外的规划线、雄安 R1 线、青岛 5 号线在建段、蓝谷快线鳌山湾站暂缓开通等均未收录/剔除）。
+- **线路色**：北京取自官方线网图图例色块的逐像素取样；青岛取自 OSM 收录的官方色。
+- **OD 流量（od.flows）**：演示数据（随机值 2600–9000），接入真实数据时替换即可。
 
 ## 切换城市
 
-改 `src/config/map.ts`：
+地图右上角有「北京 / 青岛」切换按钮，运行时直接切换；
+`src/config/map.ts` 的 `city` 决定**初始**城市：
 
 ```ts
 export const mapConfig = {
-  city: "qingdao",          // ← 改成 data/metro-cities/ 下的文件名（不含 .json）
-  visibleLines: null,       // 只显示哪些线路；null = 全部
-  od: { enabled: true, hub: "五四广场" },
+  city: "beijing",          // 初始城市："beijing" | "qingdao"
+  visibleLines: null,       // 只显示哪些线路 id；null = 全部
+  od: { enabled: true },    // OD 流量光线开关
 };
 ```
 
-保存即生效（dev 热更新），不需要改任何模块代码。
+> 注意：右侧三个面板的数据在 `data/` 根目录（panel1~3），目前是北京的内容。
+> 若长期展示青岛，请同步替换面板 JSON 里的线路/站名（见 `data/README.md`）。
 
 ## 自定义只显示哪几条线路
 
 `visibleLines` 填线路 id 数组：
 
 ```ts
-visibleLines: ["M1", "M2", "M10"],   // 只画 1号线 / 2号线 / 10号线
+visibleLines: ["M1", "M2"],          // 北京只看 1号线八通线 / 2号线
+visibleLines: ["Q1", "Q8"],          // 青岛只看 1号线 / 8号线
 ```
 
-线路 id 在城市 JSON 每条线的 `id` 字段（北京是 `M1`~`M27`、`CAE`、`DAE` 等）。
+线路 id 在城市 JSON 每条线的 `id` 字段（北京 `M1`~`M19`、`CP`/`FS`/`YF`/`YZ`/`S1`/`CAE`/`DAE`；青岛 `Q1`~`Q13`）。
 
 ## 数据文件格式
 
 ```jsonc
 {
-  "city": "北京",              // 城市显示名
-  "mode": "vector",           // "vector" 矢量模式 | "image" 图片模式
+  "city": "北京",
+  "cityId": "beijing",
+  "mode": "geo",                                  // 真实地理模式
+  "boundary": "./data/metro-cities/geo/beijing-districts.json",  // 底图边界
+  "center": [116.29, 40.05],                      // [lng, lat]（备用；组件按数据包围盒自动居中）
 
-  // —— 以下只有 vector 模式需要 ——
   "lines": [
     {
-      "id": "M1",             // 线路 id（visibleLines 过滤用它）
-      "name": "1号线",        // 显示名
-      "color": "#c23a30",     // 线路色
-      "path": [[100, 200], [100, 300], [200, 300]],  // 线路折线点序列 [x, y]
-      "stations": [           // 该线路途经的站点（换乘站会在多条线里重复出现，没关系）
-        { "name": "苹果园", "x": 100, "y": 200, "transfer": false, "label": true }
+      "id": "M1",                                 // 线路 id（visibleLines 过滤用它）
+      "name": "1号线八通线",                       // 显示名
+      "color": "#C33831",                         // 官方线路色
+      "loop": false,                              // true = 环线（首尾相接闭合绘制）
+      "stations": [                               // 途经站点，按运营站序排列
+        { "name": "苹果园", "lng": 116.171628, "lat": 39.924597 }
       ]
     }
   ],
 
-  // —— 以下只有 image 模式需要 ——
-  "image": "./data/metro-cities/qingdao-map.jpg",   // 线网图文件（相对站点根目录）
-  "imgWidth": 2200,           // 图片像素宽
-  "imgHeight": 1307,          // 图片像素高
+  // 全局去重站点：画站点圆点、点击弹窗、改色都用它
+  "stations": [
+    { "name": "西单", "lng": 116.374286, "lat": 39.906052,
+      "lines": ["M1", "M4"], "transfer": true }
+  ],
 
-  // —— 两种模式都要 ——
+  // OD 流量光线（演示数据）
   "od": {
-    "hub":  { "name": "天安门西", "x": 824, "y": 727 },   // 枢纽（光线发射点）
-    "flows": [                                             // 流量光线终点
-      { "name": "西单", "x": 765, "y": 727, "value": 9000 }
-    ]
+    "hub":  { "name": "天安门西", "lng": 116.385162, "lat": 39.90597 },
+    "flows": [ { "name": "西直门", "lng": 116.349235, "lat": 39.939217, "value": 8500 } ]
   }
 }
 ```
@@ -73,50 +91,25 @@ visibleLines: ["M1", "M2", "M10"],   // 只画 1号线 / 2号线 / 10号线
 
 | 字段 | 说明 |
 |---|---|
-| `path` | 线路的折线点序列，相邻点连成直线。拐弯多就多点，直线就两个点 |
-| `stations.transfer` | true = 换乘站（画大金点） |
-| `stations.label` | true = 显示站名（小字），不然只画一个点 |
-| `od.flows[].value` | 流量大小（数字越大线越粗越亮，范围看数据，北京用 2600~9000） |
+| `lines[].stations` | 线路途经站点，按站序排列，绘制线路走向时依次连线；`loop: true` 时首尾闭合 |
+| `stations[].lines` | 该站所属线路 id 列表，≥2 条即换乘站（金色大点） |
+| `stations[].transfer` | 换乘站标记（与 `lines` 长度一致） |
+| `od.flows[].value` | 流量大小（数字越大光线越粗越亮，演示数据 2600~9000） |
+| `boundary` | 底图 GeoJSON 路径（相对站点根目录），FeatureCollection，Polygon/MultiPolygon 均可 |
 
-坐标是**任意平面坐标系**，不需要经纬度：x 向右增、y 向下增。模块会自动算所有点的包围盒，等比缩放居中到地图区。北京用的坐标取自真实线网图，青岛用的是图片像素坐标。
+坐标是**真实经纬度（WGS84）**。模块用 Web 墨卡托投影绘制，自动按数据包围盒适配缩放。
 
 ## 怎么新增一座城市
 
-### 情况 A：有矢量数据（线路+站点坐标）
-
-1. 新建 `data/metro-cities/<城市id>.json`，`mode` 填 `"vector"`，按上面格式写线路。
-   - 站点坐标从公开线网图上量即可，只要相对位置对，模块会自动缩放。
-2. `src/config/map.ts` 的 `city` 改成 `<城市id>`，`od.hub` 改成该城市的枢纽站名。
-3. 完成。`src/config/map.ts` 顶部的 `CityId` 类型加上新 id 会有类型提示（可选）。
-
-### 情况 B：只有一张线网图（最快）
-
-1. 把图（jpg/png 都行）放进 `data/metro-cities/`，比如 `shanghai-map.jpg`。
-2. 新建 `data/metro-cities/shanghai.json`：
-
-   ```json
-   {
-     "city": "上海",
-     "mode": "image",
-     "image": "./data/metro-cities/shanghai-map.jpg",
-     "imgWidth": 2200,
-     "imgHeight": 1300,
-     "lines": [],
-     "od": { "hub": { "name": "人民广场", "x": 1100, "y": 650 }, "flows": [] }
-   }
-   ```
-
-   - `imgWidth/imgHeight` 填图片实际像素（在图上量，或用 `python3 -c "from PIL import Image; print(Image.open('shanghai-map.jpg').size)"`）。
-   - `od.hub` 的 x/y 是**图片像素坐标**：原点在图片左上角。想换枢纽位置就改这两个数。
-   - `flows` 留空就只有枢纽脉冲点；想要光线，按 `{"name":"任意站名","x":图片x,"y":图片y,"value":6000}` 加，x/y 同样是图片像素坐标。
-3. `src/config/map.ts` 的 `city` 改成 `shanghai`。
-
-> 图片模式不会画站点和站名（矢量信息都在图里了），OD 光线用你在 JSON 里填的像素坐标。
-
-### 数据来源建议
-
-- **矢量数据**：各城市地铁官方线网图、开源的 GTFS 数据、或高德/百度地图截图上量坐标。
-- 北京这份数据是从公开线网图提取的：30 条线路、447 个站点、104 个换乘站，线路色用官方配色。
+1. 准备数据（需要真实经纬度的站点与线路）：
+   - 站点坐标可从 OpenStreetMap 取（推荐 Overpass API，`railway=station`+`station=subway`，
+     线路用 `route=subway` 关系的 stop 成员顺序）；
+   - 站名/站序与官方渠道（官网、官方线网图）核对一遍，未开通的车站不要收录。
+2. 下载该城市行政区划边界：`https://geo.datav.aliyun.com/areas_v3/bound/<adcode>_full.json`，
+   存为 `geo/<城市id>-districts.json`。
+3. 新建 `data/metro-cities/<城市id>.json`，按上面格式填写。
+4. `src/config/map.ts` 的 `CityId` 类型加上新 id，`CITIES` 数组（`MetroMap.tsx` 顶部）加切换按钮。
+5. 完成，切换按钮会自动出现新城市。
 
 ## 右侧面板的站名/数据怎么换
 
@@ -124,47 +117,11 @@ visibleLines: ["M1", "M2", "M10"],   // 只画 1号线 / 2号线 / 10号线
 
 | 面板 | 数据文件 | 里面的站名 |
 |---|---|---|
- panel1 线路客运量排行 | `data/panel1-line-rank.json` | `data` 数组每项的 `name`（线路名） |
+| panel1 线路客运量排行 | `data/panel1-line-rank.json` | `data` 数组每项的 `name`（线路名） |
 | panel2 换乘站客流压力 | `data/panel2-transfer-radar.json` | `indicators` 数组每项的 `name`（换乘站名） |
 | panel3 实时告警 | `data/panel3-alarms.json` | 告警记录里的站点名 |
 
 **换站名 = 改 JSON 里的 `name`**，改完即时生效，不需要动代码。
-
-例：panel1 换成别的线路：
-
-```jsonc
-// data/panel1-line-rank.json
-{
-  "title": "线路客运量排行",
-  "unit": "万人次",
-  "data": [
-    { "name": "10号线", "value": 182 },   // ← 改 name 就是改显示的线路名
-    { "name": "1号线",  "value": 166 },
-    ...
-  ]
-}
-```
-
-panel2 换成别的换乘站：
-
-```jsonc
-// data/panel2-transfer-radar.json
-{
-  "title": "换乘站客流压力",
-  "indicators": [
-    { "name": "西直门", "max": 100 },    // ← 改 name 就是改显示的站名
-    { "name": "国贸",   "max": 100 },
-    ...
-  ],
-  "current": [72, 85, ...],              // 顺序对齐 indicators
-  "peak":   [95, 92, ...]
-}
-```
-
-panel3 告警里的站点名同理，在 `data/panel3-alarms.json` 的每条记录里。
-
-> 面板的详细结构看 `data/README.md` 和 `src/modules/panels/README.md`。
-> 换城市时记得**也要把这些面板数据换成新城市的**，不然地图是青岛、排行还是北京的线路。
 
 ## 用 API 提供这些数据
 
@@ -174,4 +131,5 @@ panel3 告警里的站点名同理，在 `data/panel3-alarms.json` 的每条记�
 GET /api/metro/city/<城市id>     → 返回本目录对应 JSON 的完整结构
 ```
 
-`<城市id>` 就是 `mapConfig.city`。其余面板接口见 `data-source.ts` 的 `API_ENDPOINTS`。
+`<城市id>` 即 `mapConfig.city`（运行时切换城市时是所选城市 id）。底图边界 JSON 由前端按 `boundary`
+字段直接 fetch，API 模式下把它换成对应静态资源或接口地址即可。
