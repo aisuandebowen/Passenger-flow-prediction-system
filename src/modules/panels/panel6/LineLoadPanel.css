@@ -96,7 +96,7 @@
 
 /* ---- 单条线路列 ---- */
 .ll-col {
-  flex: 0 0 150px;
+  flex: 0 0 200px;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -151,8 +151,9 @@
 }
 
 .ll-station {
-  flex: 0 0 4.4em;
-  font-size: 0.625em;
+  flex: 0 0 6em;
+  position: relative;
+  font-size: 0.6875em;
   color: var(--dv-text);
   white-space: nowrap;
   overflow: hidden;
@@ -190,4 +191,26 @@
   font-size: 0.625em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* 站名省略号时的悬浮完整提示（自定义 tooltip） */
+.ll-station .ll-tip {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 50;
+  display: none;
+  padding: 3px 8px;
+  background: rgba(4, 20, 36, 0.98);
+  border: 1px solid var(--dv-panel-border);
+  border-radius: 4px;
+  color: var(--dv-title);
+  font-size: 0.875em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.ll-station:hover .ll-tip {
+  display: inline-block;
 }

@@ -44,9 +44,6 @@ export default function Panels({ page, selectedStation }: PanelsProps) {
       className="panels"
       style={{
         width: layout.panels.width,
-        top: layout.panels.top,
-        bottom: layout.panels.bottom,
-        right: layout.panels.right,
         gap: layout.panels.gap,
       }}
     >

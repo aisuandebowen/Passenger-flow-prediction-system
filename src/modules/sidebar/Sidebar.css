@@ -1,7 +1,10 @@
-/* 左侧侧边栏样式 —— 悬浮、半透明、模版同款蓝色描边 */
+/* 左侧侧边栏样式 —— 三栏布局左栏（flex 子项占位），半透明、模版同款蓝色描边 */
 
 .sidebar {
-  position: absolute;
+  position: relative;
+  flex: 0 0 auto;
+  align-self: stretch;
+  height: 100%;
   z-index: 20;
   display: flex;
   flex-direction: column;

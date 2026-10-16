@@ -18,14 +18,28 @@
   overflow: hidden;
 }
 
-/* 中央地图区：两侧之间的可视区域，不遮挡侧栏与面板 */
+/* 中央地图区：三栏布局中栏（flex:1 自适应，侧栏折叠时自动左扩） */
 .app__map {
-  position: absolute;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   z-index: 1;
 }
 
-/* 线路满载率：独占地图 + 右侧面板区域的全宽容器 */
+/* 线路满载率：三栏布局中右合并（flex:1 占满侧栏之外的全部空间） */
 .app__lineload {
-  position: absolute;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   z-index: 2;
+}
+
+/* 主体：标题下方，左中右三栏 flex 布局 */
+.app__body {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }

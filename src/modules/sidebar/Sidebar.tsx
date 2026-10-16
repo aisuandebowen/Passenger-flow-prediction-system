@@ -43,16 +43,21 @@ const ICONS: Record<string, string> = {
 export default function Sidebar({
   onSelect,
   defaultActiveId = "",
+  collapsed = false,
+  onToggle,
 }: {
   /** 点击小目录时的回调，参数为小目录 id */
   onSelect?: (id: string) => void;
   /** 默认选中的小目录 id（页面打开时的初始选中项） */
   defaultActiveId?: string;
+  /** 整栏折叠状态（受控，由父组件管理） */
+  collapsed?: boolean;
+  /** 点击折叠按钮时的回调 */
+  onToggle?: () => void;
 }) {
   const [data, setData] = useState<SidebarData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [collapsed, setCollapsed] = useState(false); // 整栏折叠
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set()); // 展开的大目录
   const [activeId, setActiveId] = useState<string>(defaultActiveId);
 
@@ -116,16 +121,13 @@ export default function Sidebar({
       className={`sidebar ${collapsed ? "sidebar--collapsed" : ""}`}
       style={{
         width,
-        top: layout.sidebar.top,
-        bottom: layout.sidebar.bottom,
-        left: layout.sidebar.left,
         transition: `width ${layout.sidebar.transition}s ease`,
       }}
     >
       {/* 折叠/展开按钮（始终显示在最顶部） */}
       <button
         className="sidebar__toggle"
-        onClick={() => setCollapsed((c) => !c)}
+        onClick={onToggle}
         title={collapsed ? "展开侧边栏" : "折叠侧边栏"}
         aria-label="切换侧边栏">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

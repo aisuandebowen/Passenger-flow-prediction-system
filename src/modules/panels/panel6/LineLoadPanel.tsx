@@ -128,8 +128,9 @@ export default function LineLoadPanel() {
                   const pct = Math.min(100, s.load);
                   return (
                     <div className="ll-row" key={s.name}>
-                      <span className="ll-station" title={s.name}>
+                      <span className="ll-station">
                         {s.name}
+                        <i className="ll-tip">{s.name}</i>
                       </span>
                       <div className="ll-bar-track">
                         <div

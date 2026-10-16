@@ -38,6 +38,8 @@ export default function App() {
   const [activeMenu, setActiveMenu] = useState<string>(DEFAULT_MENU);
   // 地图当前选中的站点（趋势面板联动显示该站数据）
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
+  // 侧边栏折叠状态（提升到这里，联动地图/满载率布局）
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleSelect = useCallback((id: string) => {
     setActiveMenu(id);
@@ -61,6 +63,10 @@ export default function App() {
   // 车站管理页关闭地图 OD 流动线
   const odEnabled = page !== "station-manage";
 
+  const sidebarWidth = sidebarCollapsed
+    ? layout.sidebar.collapsedWidth
+    : layout.sidebar.width;
+
   return (
     <div className="app">
       {/* 缩放画布：所有模块都放在里面，整体等比缩放 */}
@@ -76,42 +82,44 @@ export default function App() {
         {/* 1. 背景模块（最底层） */}
         <Background />
 
-        {/* 2. 中央地图模块（线路满载率页不渲染地图，独占全宽） */}
-        {page !== "line-load" && (
-          <div
-            className="app__map"
-            style={{
-              left: layout.mapArea.left,
-              right: layout.mapArea.right,
-              top: layout.mapArea.top,
-              bottom: layout.mapArea.bottom,
-            }}>
-            <MetroMap odEnabled={odEnabled} onSelectStation={handleSelectStation} />
-          </div>
-        )}
-
-        {/* 3. 左侧侧边栏模块（悬浮） */}
-        <Sidebar onSelect={handleSelect} defaultActiveId={DEFAULT_MENU} />
-
-        {/* 4. 右侧面板模块（悬浮，按选中菜单切换面板组合） */}
-        {page === "line-load" ? (
-          // 线路满载率管控：独占中央地图 + 右侧面板区域（全宽，左边界避开展开的侧边栏）
-          <div
-            className="app__lineload"
-            style={{
-              left: layout.sidebar.width + 20,
-              right: layout.panels.right,
-              top: layout.mapArea.top,
-              bottom: layout.mapArea.bottom,
-            }}>
-            <LineLoadPanel />
-          </div>
-        ) : (
-          <Panels page={page} selectedStation={selectedStation} />
-        )}
-
-        {/* 5. 顶部标题栏（最顶层） */}
+        {/* 2. 顶部标题栏 */}
         <Header />
+
+        {/* 3. 主体：标题下方，严格左中右三栏布局 */}
+        <div
+          className="app__body"
+          style={{
+            top: layout.body.top,
+            bottom: layout.body.bottom,
+            left: layout.body.side,
+            right: layout.body.side,
+            gap: layout.body.gap,
+          }}>
+          {/* 左栏：侧边栏（flex 占位，折叠时收窄，中/右自动左扩） */}
+          <Sidebar
+            onSelect={handleSelect}
+            defaultActiveId={DEFAULT_MENU}
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed((c) => !c)}
+          />
+
+          {page === "line-load" ? (
+            // 线路满载率管控：占用中 + 右（侧栏折叠后自动扩展占满剩余）
+            <div className="app__lineload">
+              <LineLoadPanel />
+            </div>
+          ) : (
+            <>
+              {/* 中栏：地图（flex:1 自适应，侧栏折叠时左扩） */}
+              <div className="app__map">
+                <MetroMap odEnabled={odEnabled} onSelectStation={handleSelectStation} />
+              </div>
+
+              {/* 右栏：面板 */}
+              <Panels page={page} selectedStation={selectedStation} />
+            </>
+          )}
+        </div>
 
         {/* 当前选中菜单（调试用，可删） */}
         {activeMenu && (
