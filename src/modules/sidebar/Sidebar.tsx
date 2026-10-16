@@ -42,16 +42,19 @@ const ICONS: Record<string, string> = {
 
 export default function Sidebar({
   onSelect,
+  defaultActiveId = "",
 }: {
   /** 点击小目录时的回调，参数为小目录 id */
   onSelect?: (id: string) => void;
+  /** 默认选中的小目录 id（页面打开时的初始选中项） */
+  defaultActiveId?: string;
 }) {
   const [data, setData] = useState<SidebarData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [collapsed, setCollapsed] = useState(false); // 整栏折叠
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set()); // 展开的大目录
-  const [activeId, setActiveId] = useState<string>("");
+  const [activeId, setActiveId] = useState<string>(defaultActiveId);
 
   // 入场动画：从左滑入。autoPlay=false，等数据到了再播一次（见下方 effect），
   // 避免空壳先滑一次、数据到了又滑一次。
@@ -66,11 +69,15 @@ export default function Sidebar({
     loadData<SidebarData>("sidebarMenus")
       .then((d) => {
         setData(d);
-        // 默认展开第一个大目录
-        if (d.length > 0) setOpenGroups(new Set([d[0].id]));
+        // 默认展开「包含默认选中项」的大目录；无默认选中项则展开第一个
+        const groupOfDefault = defaultActiveId
+          ? d.find((g) => g.children.some((c) => c.id === defaultActiveId))
+          : undefined;
+        const first = d.length > 0 ? d[0] : undefined;
+        setOpenGroups(new Set([(groupOfDefault ?? first)?.id].filter(Boolean) as string[]));
       })
       .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [defaultActiveId]);
 
   // 数据到了之后播一次入场（只播一次：playedRef 挡住后续所有重渲染）
   const playedRef = useRef(false);

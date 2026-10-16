@@ -23,3 +23,9 @@
   position: absolute;
   z-index: 1;
 }
+
+/* 线路满载率：独占地图 + 右侧面板区域的全宽容器 */
+.app__lineload {
+  position: absolute;
+  z-index: 2;
+}

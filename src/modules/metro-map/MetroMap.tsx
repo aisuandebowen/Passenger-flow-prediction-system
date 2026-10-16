@@ -30,7 +30,15 @@ const CITIES: { id: "beijing" | "qingdao"; name: string }[] = [
   { id: "qingdao", name: "青岛" },
 ];
 
-export default function MetroMap() {
+export default function MetroMap({
+  odEnabled,
+  onSelectStation,
+}: {
+  /** 是否绘制 OD 流量光线（由外部页面状态控制） */
+  odEnabled?: boolean;
+  /** 点击地图站点时的回调，参数为站点名 */
+  onSelectStation?: (name: string | null) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(containerRef);
   const [cityId, setCityId] = useState<(typeof CITIES)[number]["id"]>(mapConfig.city);
@@ -38,6 +46,15 @@ export default function MetroMap() {
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<string | null>(null);
   const { overrides, setStationColor, setLineColor } = useOverrides(cityId);
+
+  // 外部是否显式控制 OD 开关；未传则回退到 mapConfig
+  const odOn = odEnabled ?? mapConfig.od.enabled;
+
+  // 选中站点变化时同步给外部（趋势面板联动）
+  const handleSelect = (name: string | null) => {
+    setSelection(name);
+    onSelectStation?.(name);
+  };
 
   // 加载当前城市数据（切换城市时重新加载）
   useEffect(() => {
@@ -69,9 +86,9 @@ export default function MetroMap() {
           onSetStationColor={setStationColor}
           onSetLineColor={setLineColor}
           selection={selection}
-          onSelect={setSelection}
+          onSelect={handleSelect}
           visibleLines={mapConfig.visibleLines}
-          odEnabled={mapConfig.od.enabled}
+          odEnabled={odOn}
           initialZoom={mapConfig.initialZoom}
         />
       )}

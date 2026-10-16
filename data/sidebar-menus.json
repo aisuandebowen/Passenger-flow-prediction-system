@@ -11,6 +11,10 @@
       {
         "id": "station-manage",
         "title": "车站管理"
+      },
+      {
+        "id": "line-load",
+        "title": "线路满载率管控"
       }
     ]
   },

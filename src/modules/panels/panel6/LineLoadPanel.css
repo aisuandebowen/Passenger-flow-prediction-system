@@ -1,0 +1,193 @@
+/* 面板 6：线路满载率管控（全宽独占布局） */
+
+.ll-panel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(4, 20, 36, 0.72);
+  border: 1px solid var(--dv-panel-border);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ---- 标题栏 ---- */
+.ll-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 52px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--dv-panel-border);
+}
+
+.ll-title {
+  position: relative;
+  font-size: 1em;
+  letter-spacing: 2px;
+  color: var(--dv-title);
+  padding-bottom: 6px;
+}
+
+.ll-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  background: var(--dv-accent);
+}
+
+.ll-stats {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75em;
+  color: var(--dv-sub);
+}
+
+.ll-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-left: 6px;
+}
+
+.ll-legend {
+  display: flex;
+  gap: 18px;
+  font-size: 0.6875em;
+  color: var(--dv-sub);
+}
+
+.ll-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+/* ---- 横向滚动区：所有线路并列 ---- */
+.ll-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 158, 255, 0.4) transparent;
+}
+
+.ll-columns {
+  display: flex;
+  height: 100%;
+  padding: 12px;
+  gap: 10px;
+  min-width: max-content;
+}
+
+/* ---- 单条线路列 ---- */
+.ll-col {
+  flex: 0 0 150px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ll-col-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border-left: 4px solid;
+  background: rgba(48, 97, 219, 0.14);
+  color: var(--dv-title);
+  font-size: 0.6875em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ll-col-line {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ll-col-head span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ll-col-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 158, 255, 0.4) transparent;
+}
+
+/* ---- 站点行 ---- */
+.ll-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 1.5em;
+  border-bottom: 1px dashed rgba(120, 158, 255, 0.1);
+}
+
+.ll-row:hover {
+  background: rgba(48, 97, 219, 0.1);
+}
+
+.ll-station {
+  flex: 0 0 4.4em;
+  font-size: 0.625em;
+  color: var(--dv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ll-bar-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 0.45em;
+  background: rgba(48, 97, 219, 0.14);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ll-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* 100% 饱和参考线（满载率 100% 处，位于轨道 100% 即右端） */
+.ll-bar-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.ll-value {
+  flex: 0 0 2.6em;
+  text-align: right;
+  font-size: 0.625em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,33 @@
+/* 面板 5：车站客运量排行 —— 时间段切换按钮 */
+
+.sr-period-switch {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.sr-period-chip {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--dv-sub);
+  font-size: 0.625em;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sr-period-chip:hover {
+  color: var(--dv-title);
+  border-color: var(--dv-panel-border);
+}
+
+.sr-period-chip.is-active {
+  background: rgba(48, 97, 219, 0.32);
+  color: var(--dv-title);
+  border-color: var(--dv-accent);
+}

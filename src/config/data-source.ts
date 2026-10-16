@@ -29,6 +29,9 @@ export const LOCAL_PATHS = {
   panel2: "./data/panel2-transfer-radar.json",
   panel3: "./data/panel3-alarms.json",
   panel4: "./data/panel4-trend.json",
+  stationTrend: "./data/station-trend.json",
+  stationRank: "./data/station-rank.json",
+  lineLoad: "./data/line-load.json",
 } as const;
 
 /** API 接口地址（DATA_MODE='api' 时生效） */
@@ -39,6 +42,9 @@ export const API_ENDPOINTS = {
   panel2: "/api/panels/transfer-radar",
   panel3: "/api/panels/alarms",
   panel4: "/api/panels/trend",
+  stationTrend: "/api/panels/station-trend",
+  stationRank: "/api/panels/station-rank",
+  lineLoad: "/api/panels/line-load",
 } as const;
 
 /** 数据源的 key，各模块用这个名字取数据 */

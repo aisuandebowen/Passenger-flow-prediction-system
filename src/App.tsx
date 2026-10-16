@@ -19,25 +19,47 @@
  * 各模块只依赖 src/config（配置）与 src/components、src/hooks（公共件）。
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Background from "@/modules/background/Background";
 import Header from "@/modules/header/Header";
 import Sidebar from "@/modules/sidebar/Sidebar";
 import MetroMap from "@/modules/metro-map/MetroMap";
-import Panels from "@/modules/panels/Panels";
+import Panels, { type PanelPage } from "@/modules/panels/Panels";
+import LineLoadPanel from "@/modules/panels/panel6/LineLoadPanel";
 import { layout } from "@/config/layout";
 import { useAutoFit } from "@/utils/autofit";
 import "./App.css";
 
+/** 默认选中的左侧菜单：线网管理 -> 线路状态 */
+const DEFAULT_MENU = "line-status";
+
 export default function App() {
   const { scale, offsetX, offsetY } = useAutoFit();
-  const [activeMenu, setActiveMenu] = useState<string>("");
+  const [activeMenu, setActiveMenu] = useState<string>(DEFAULT_MENU);
+  // 地图当前选中的站点（趋势面板联动显示该站数据）
+  const [selectedStation, setSelectedStation] = useState<string | null>(null);
 
   const handleSelect = useCallback((id: string) => {
     setActiveMenu(id);
+    // 切换菜单时清空地图站点选择，趋势面板回到默认站
+    setSelectedStation(null);
     // 在此接入路由切换 / 数据刷新等逻辑
     console.info("[sidebar] 选中：", id);
   }, []);
+
+  const handleSelectStation = useCallback((name: string | null) => {
+    setSelectedStation(name);
+  }, []);
+
+  // 当前页面：三个菜单 id 有对应面板，其余视为线路状态页
+  const page: PanelPage = useMemo(() => {
+    if (activeMenu === "station-manage") return "station-manage";
+    if (activeMenu === "line-load") return "line-load";
+    return "line-status";
+  }, [activeMenu]);
+
+  // 车站管理页关闭地图 OD 流动线
+  const odEnabled = page !== "station-manage";
 
   return (
     <div className="app">
@@ -54,23 +76,39 @@ export default function App() {
         {/* 1. 背景模块（最底层） */}
         <Background />
 
-        {/* 2. 中央地图模块（铺满，左右留出侧边栏与面板的悬浮区） */}
-        <div
-          className="app__map"
-          style={{
-            left: layout.mapArea.left,
-            right: layout.mapArea.right,
-            top: layout.mapArea.top,
-            bottom: layout.mapArea.bottom,
-          }}>
-          <MetroMap />
-        </div>
+        {/* 2. 中央地图模块（线路满载率页不渲染地图，独占全宽） */}
+        {page !== "line-load" && (
+          <div
+            className="app__map"
+            style={{
+              left: layout.mapArea.left,
+              right: layout.mapArea.right,
+              top: layout.mapArea.top,
+              bottom: layout.mapArea.bottom,
+            }}>
+            <MetroMap odEnabled={odEnabled} onSelectStation={handleSelectStation} />
+          </div>
+        )}
 
         {/* 3. 左侧侧边栏模块（悬浮） */}
-        <Sidebar onSelect={handleSelect} />
+        <Sidebar onSelect={handleSelect} defaultActiveId={DEFAULT_MENU} />
 
-        {/* 4. 右侧面板模块（悬浮，内含 3 个独立小面板） */}
-        <Panels />
+        {/* 4. 右侧面板模块（悬浮，按选中菜单切换面板组合） */}
+        {page === "line-load" ? (
+          // 线路满载率管控：独占中央地图 + 右侧面板区域（全宽，左边界避开展开的侧边栏）
+          <div
+            className="app__lineload"
+            style={{
+              left: layout.sidebar.width + 20,
+              right: layout.panels.right,
+              top: layout.mapArea.top,
+              bottom: layout.mapArea.bottom,
+            }}>
+            <LineLoadPanel />
+          </div>
+        ) : (
+          <Panels page={page} selectedStation={selectedStation} />
+        )}
 
         {/* 5. 顶部标题栏（最顶层） */}
         <Header />
