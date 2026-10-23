@@ -32,6 +32,8 @@ export const LOCAL_PATHS = {
   stationTrend: "./data/station-trend.json",
   stationRank: "./data/station-rank.json",
   lineLoad: "./data/line-load.json",
+  sceneMenus: "./data/scene-menus.json",
+  sceneDetail: "./data/scene-detail.json",
 } as const;
 
 /** API 接口地址（DATA_MODE='api' 时生效） */
@@ -45,6 +47,8 @@ export const API_ENDPOINTS = {
   stationTrend: "/api/panels/station-trend",
   stationRank: "/api/panels/station-rank",
   lineLoad: "/api/panels/line-load",
+  sceneMenus: "/api/scene/menus",
+  sceneDetail: "/api/scene/detail",
 } as const;
 
 /** 数据源的 key，各模块用这个名字取数据 */

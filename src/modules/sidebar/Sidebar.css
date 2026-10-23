@@ -164,8 +164,35 @@
 }
 
 .sidebar__sub-text {
+  flex: 1 1 auto;
   white-space: nowrap;
   overflow: hidden;
+}
+
+/* 日期动态高亮角标（今天 / 临近） */
+.sidebar__sub-badge {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.6875em;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+
+.sidebar__sub-badge--today {
+  background: var(--dv-danger);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(234, 88, 12, 0.6);
+}
+
+.sidebar__sub-badge--near {
+  background: rgba(255, 168, 0, 0.2);
+  color: var(--dv-warning, #ffa800);
+  border: 1px solid rgba(255, 168, 0, 0.5);
+}
+
+.sidebar--collapsed .sidebar__sub-badge {
+  display: none;
 }
 
 .sidebar--collapsed .sidebar__sub {

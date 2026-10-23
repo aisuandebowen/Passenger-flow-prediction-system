@@ -1,0 +1,45 @@
+{
+  "holidays": [
+    {
+      "id": "may-day",
+      "title": "五一节",
+      "date": "05-01",
+      "stations": ["天安门东", "天安门西", "西单", "前门", "王府井"]
+    },
+    {
+      "id": "dragon-boat",
+      "title": "端午节",
+      "date": "06-19",
+      "stations": ["龙潭湖", "陶然亭", "圆明园", "颐和园", "什刹海"]
+    },
+    {
+      "id": "mid-autumn",
+      "title": "中秋节",
+      "date": "09-25",
+      "stations": ["西单", "王府井", "前门", "东单", "天安门东"]
+    }
+  ],
+  "events": [
+    {
+      "id": "gemin-concert",
+      "title": "邓紫棋演唱会",
+      "date": "08-16",
+      "venue": "工人体育场",
+      "stations": ["工体", "东四十条", "团结湖", "呼家楼"]
+    },
+    {
+      "id": "jay-concert",
+      "title": "周杰伦演唱会",
+      "date": "10-03",
+      "venue": "国家体育场",
+      "stations": ["奥林匹克公园", "奥体中心", "森林公园南门"]
+    },
+    {
+      "id": "ice-festival",
+      "title": "冰雪节",
+      "date": "12-20",
+      "venue": "首钢园",
+      "stations": ["新首钢", "金安桥", "苹果园"]
+    }
+  ]
+}

@@ -26,6 +26,8 @@ import "./Sidebar.css";
 export interface MenuItem {
   id: string;
   title: string;
+  /** 日期（MM-DD），用于"今天/临近"动态高亮（节假日/大型活动场景项） */
+  date?: string;
 }
 export interface MenuGroup extends MenuItem {
   icon?: string;
@@ -33,12 +35,39 @@ export interface MenuGroup extends MenuItem {
 }
 export type SidebarData = MenuGroup[];
 
+/** 场景菜单数据结构（节假日/大型活动，来自 scene-menus.json） */
+interface SceneMenuItem {
+  id: string;
+  title: string;
+  date: string;
+  venue?: string;
+  stations?: string[];
+}
+interface SceneMenusData {
+  holidays: SceneMenuItem[];
+  events: SceneMenuItem[];
+}
+
 // ---------- 图标（内联 SVG，零依赖） ----------
 const ICONS: Record<string, string> = {
   chart: "M3 13h4v8H3zM10 3h4v18h-4zM17 9h4v12h-4z",
   network: "M12 2a4 4 0 0 1 4 4 4 4 0 0 1-1.2 2.9L18 14a3 3 0 1 1-2 5.2L12 15l-4 4.2A3 3 0 1 1 6 14l3.2-5.1A4 4 0 0 1 8 6a4 4 0 0 1 4-4z",
   alert: "M12 2 2 20h20L12 2zm0 6v6m0 3.5v.5",
+  holiday: "M12 3a6 6 0 0 0-6 6c0 4 6 12 6 12s6-8 6-12a6 6 0 0 0-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z",
+  event: "M8 2v3m8-3v3M4 5h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm4 8h8m-8 4h5",
 };
+
+/** 日期临近判定：今天→"today"，未来 7 天内→"near"，其余→"far" */
+function dateState(dateStr: string, now: Date): "today" | "near" | "far" {
+  const [m, d] = dateStr.split("-").map(Number);
+  if (!m || !d) return "far";
+  const target = new Date(now.getFullYear(), m - 1, d);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round((target.getTime() - startOfToday.getTime()) / 86400000);
+  if (diffDays === 0) return "today";
+  if (diffDays > 0 && diffDays <= 7) return "near";
+  return "far";
+}
 
 export default function Sidebar({
   onSelect,
@@ -71,14 +100,44 @@ export default function Sidebar({
   });
 
   useEffect(() => {
-    loadData<SidebarData>("sidebarMenus")
-      .then((d) => {
-        setData(d);
+    // 同时加载：线网管理目录（sidebar-menus）+ 节假日/大型活动目录（scene-menus）
+    Promise.all([
+      loadData<SidebarData>("sidebarMenus"),
+      loadData<SceneMenusData>("sceneMenus"),
+    ])
+      .then(([menus, scenes]) => {
+        // 合并：线网管理目录保留，节假日检测/大型活动由 scene-menus 动态生成
+        const merged: SidebarData = [...menus];
+        const networkIdx = merged.findIndex((g) => g.id === "network");
+
+        const holidayGroup: MenuGroup = {
+          id: "monitor",
+          title: "节假日检测",
+          icon: "holiday",
+          children: scenes.holidays.map((s) => ({ id: s.id, title: s.title, date: s.date })),
+        };
+        const eventGroup: MenuGroup = {
+          id: "dispatch",
+          title: "大型活动",
+          icon: "event",
+          children: scenes.events.map((s) => ({ id: s.id, title: s.title, date: s.date })),
+        };
+
+        // 用动态目录替换原有同名占位目录；若不存在则追加到末尾
+        const replaceOrPush = (g: MenuGroup) => {
+          const i = merged.findIndex((x) => x.id === g.id);
+          if (i >= 0) merged[i] = g;
+          else merged.push(g);
+        };
+        replaceOrPush(holidayGroup);
+        replaceOrPush(eventGroup);
+
+        setData(merged);
         // 默认展开「包含默认选中项」的大目录；无默认选中项则展开第一个
         const groupOfDefault = defaultActiveId
-          ? d.find((g) => g.children.some((c) => c.id === defaultActiveId))
+          ? merged.find((g) => g.children.some((c) => c.id === defaultActiveId))
           : undefined;
-        const first = d.length > 0 ? d[0] : undefined;
+        const first = merged.length > 0 ? merged[0] : undefined;
         setOpenGroups(new Set([(groupOfDefault ?? first)?.id].filter(Boolean) as string[]));
       })
       .catch((e: Error) => setError(e.message));
@@ -181,17 +240,25 @@ export default function Sidebar({
               style={{
                 maxHeight: isOpen ? group.children.length * layout.sidebar.subItemHeight : 0,
               }}>
-              {group.children.map((item) => (
-                <button
-                  key={item.id}
-                  className={`sidebar__sub-item ${activeId === item.id ? "sidebar__sub-item--active" : ""}`}
-                  onClick={() => handleSelect(item)}
-                  title={collapsed ? item.title : ""}
-                  style={{ height: layout.sidebar.subItemHeight }}>
-                  <span className="sidebar__sub-dot" style={{ backgroundColor: theme.primary }} />
-                  <span className="sidebar__sub-text">{item.title}</span>
-                </button>
-              ))}
+              {group.children.map((item) => {
+                const state = item.date ? dateState(item.date, new Date()) : null;
+                return (
+                  <button
+                    key={item.id}
+                    className={`sidebar__sub-item ${activeId === item.id ? "sidebar__sub-item--active" : ""}`}
+                    onClick={() => handleSelect(item)}
+                    title={collapsed ? item.title : ""}
+                    style={{ height: layout.sidebar.subItemHeight }}>
+                    <span className="sidebar__sub-dot" style={{ backgroundColor: theme.primary }} />
+                    <span className="sidebar__sub-text">{item.title}</span>
+                    {state && state !== "far" && (
+                      <span className={`sidebar__sub-badge sidebar__sub-badge--${state}`}>
+                        {state === "today" ? "今天" : "临近"}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         );

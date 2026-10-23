@@ -112,10 +112,14 @@ export interface GeoMapViewProps {
   odEnabled: boolean;
   /** 初始视野缩放倍数（1 = 全城铺满；也是「复位视野」按钮回到的层级） */
   initialZoom: number;
+  /** 场景聚焦站点：脉冲高亮 + 自动聚焦包围盒；其余站弱化。null = 正常监控视图 */
+  focusStations?: string[] | null;
+  /** 紧凑模式（小地图窗）：隐藏缩放按钮与操作提示 */
+  compact?: boolean;
 }
 
 export default function GeoMapView(props: GeoMapViewProps) {
-  const { width, height, city } = props;
+  const { width, height, city, focusStations } = props;
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ---- 行政区划边界（模块级缓存，切城市回来不重复拉取） ----
@@ -179,12 +183,44 @@ export default function GeoMapView(props: GeoMapViewProps) {
   }, [city.cityId, props.initialZoom, districts, worldBox]);
   const worldKey = `${city.cityId}:${districts ? districts.length : "loading"}`;
   const prevWorldKey = useRef<string | null>(null);
+  // 聚焦视野的最新值（供初始视野 effect 读取，避免声明顺序问题）
+  const focusViewRef = useRef<ViewState | null>(null);
   useEffect(() => {
     if (fit.s <= 0) return;
     if (prevWorldKey.current === worldKey && view) return;
     prevWorldKey.current = worldKey;
-    setView(homeView);
+    // 有场景聚焦时优先聚焦到相关站包围盒，否则回默认视野
+    setView(focusViewRef.current ?? homeView);
   }, [worldKey, fit.s, homeView, view]);
+
+  // ---- 场景聚焦：相关站点集合 + 聚焦视野 ----
+  const focusSet = useMemo(() => new Set(focusStations ?? []), [focusStations]);
+  const focusView = useMemo<ViewState | null>(() => {
+    if (!focusStations || focusStations.length === 0 || fit.s <= 0) return null;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const s of city.stations) {
+      if (!focusSet.has(s.name)) continue;
+      const [wx, wy] = projectLngLat(s.lng, s.lat);
+      if (wx < minX) minX = wx;
+      if (wy < minY) minY = wy;
+      if (wx > maxX) maxX = wx;
+      if (wy > maxY) maxY = wy;
+    }
+    if (!isFinite(minX)) return null;
+    const bw = Math.max(maxX - minX, 0.0005); // 世界宽（下限防止过近，0.0005≈20km）
+    const bh = Math.max(maxY - minY, 0.0005);
+    // 包围盒 + 60% 留白铺满视口（聚焦场景允许比常规缩放上限更近一档）
+    const k = Math.max(K_MIN, Math.min(K_MAX * 2, Math.min(width / (bw * 1.6), height / (bh * 1.6)) / fit.s));
+    return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, k };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusStations, city.cityId, fit, districts]);
+  focusViewRef.current = focusView;
+
+  // 聚焦站点变化时，自动把视野拉到相关站包围盒
+  useEffect(() => {
+    if (!focusView) return;
+    setView(focusView);
+  }, [focusView]);
   const viewRef = useRef<ViewState | null>(null);
   viewRef.current = view;
 
@@ -473,21 +509,43 @@ export default function GeoMapView(props: GeoMapViewProps) {
 
         {/* 4. 站点圆点 */}
         <g className="mm-stations">
-          {dots.map(({ s, p: [x, y] }) =>
-            s.transfer ? (
+          {dots.map(({ s, p: [x, y] }) => {
+            const isFocus = focusSet.has(s.name);
+            const dim = focusSet.size > 0 && !isFocus; // 聚焦模式下非相关站弱化
+            const dotOpacity = dim ? 0.25 : 1;
+            return s.transfer ? (
               <circle
                 key={s.name}
                 cx={x}
                 cy={y}
                 r={4.4}
-                fill={stationColor(s)}
+                fill={isFocus ? theme.transferStation : stationColor(s)}
                 stroke="rgba(2, 6, 23, 0.85)"
                 strokeWidth={1.4}
+                opacity={dotOpacity}
               />
             ) : (
-              <circle key={s.name} cx={x} cy={y} r={2.7} fill={stationColor(s)} opacity={0.92} />
-            )
-          )}
+              <circle key={s.name} cx={x} cy={y} r={2.7} fill={stationColor(s)} opacity={dim ? 0.2 : 0.92} />
+            );
+          })}
+          {/* 场景聚焦：相关站脉冲高亮圈 */}
+          {focusSet.size > 0 &&
+            dots
+              .filter(({ s }) => focusSet.has(s.name))
+              .map(({ s, p: [x, y] }) => (
+                <circle
+                  key={`focus-${s.name}`}
+                  cx={x}
+                  cy={y}
+                  r={7}
+                  fill="none"
+                  stroke={theme.transferStation}
+                  strokeWidth={1.8}
+                >
+                  <animate attributeName="r" values="6;11;6" dur="1.8s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.9;0.25;0.9" dur="1.8s" repeatCount="indefinite" />
+                </circle>
+              ))}
           {/* 选中高亮圈 */}
           {selectedPos && (
             <circle cx={selectedPos[0]} cy={selectedPos[1]} r={8} fill="none" stroke={theme.accent} strokeWidth={1.6}>
@@ -538,20 +596,22 @@ export default function GeoMapView(props: GeoMapViewProps) {
       </svg>
 
       {/* 缩放按钮 */}
-      <div className="mm-controls">
-        <button className="mm-ctrl-btn" title="放大" onClick={() => zoomAt(1.5)}>
-          ＋
-        </button>
-        <button className="mm-ctrl-btn" title="缩小" onClick={() => zoomAt(1 / 1.5)}>
-          －
-        </button>
-        <button className="mm-ctrl-btn" title="复位视野" onClick={() => setView(homeView)}>
-          ⌂
-        </button>
-      </div>
+      {!props.compact && (
+        <div className="mm-controls">
+          <button className="mm-ctrl-btn" title="放大" onClick={() => zoomAt(1.5)}>
+            ＋
+          </button>
+          <button className="mm-ctrl-btn" title="缩小" onClick={() => zoomAt(1 / 1.5)}>
+            －
+          </button>
+          <button className="mm-ctrl-btn" title="复位视野" onClick={() => setView(homeView)}>
+            ⌂
+          </button>
+        </div>
+      )}
 
       {/* 操作提示 */}
-      <div className="mm-hint">滚轮缩放 · 拖拽平移 · 点击站点</div>
+      {!props.compact && <div className="mm-hint">滚轮缩放 · 拖拽平移 · 点击站点</div>}
 
       {/* 站点弹窗 */}
       {selected && selectedPos && (

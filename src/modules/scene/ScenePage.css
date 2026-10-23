@@ -1,0 +1,34 @@
+/* 场景页 —— 中区时间轴 + 右栏面板 */
+
+.scene-page {
+  display: flex;
+  gap: 12px;
+  height: 100%;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.scene-page--loading,
+.scene-page--error {
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125em;
+  color: var(--dv-sub);
+}
+
+.scene-page--error {
+  color: var(--dv-danger);
+}
+
+/* 中区：预测时间轴（flex:1 自适应，侧栏折叠时左扩） */
+.scene-page__timeline {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* 右栏：预测详情面板（固定宽，复用右侧面板宽度） */
+.scene-page__panel {
+  flex: 0 0 420px;
+  min-width: 0;
+}

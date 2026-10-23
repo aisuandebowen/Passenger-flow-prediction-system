@@ -1,0 +1,289 @@
+/* 预测时间轴 —— 场景页核心模块（横向时间线 + 节点 + 峰值锚点 + 流光） */
+
+.scene-timeline {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  border-radius: 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 20, 36, 0.72) 0%,
+    rgba(3, 10, 22, 0.78) 100%
+  );
+  border: 1px solid var(--dv-panel-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 24px rgba(48, 97, 219, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+
+/* ---- 头部：标题 + 日期/场馆 ---- */
+.st-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.st-title {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--dv-title);
+  letter-spacing: 1px;
+  position: relative;
+  padding-left: 12px;
+}
+
+.st-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 0.9em;
+  background: var(--dv-accent);
+  border-radius: 2px;
+}
+
+.st-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.75em;
+  color: var(--dv-sub);
+}
+
+.st-venue {
+  color: var(--dv-transfer);
+}
+
+.st-date {
+  padding: 2px 10px;
+  border: 1px solid var(--dv-panel-border);
+  border-radius: 12px;
+  color: var(--dv-accent);
+}
+
+/* ---- 时间线主区 ---- */
+.st-track {
+  position: relative;
+  flex: 0 0 auto;
+  height: 200px;
+  margin: 24px 0 8px;
+}
+
+/* 主线：横向贯穿 */
+.st-line {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg,
+    rgba(120, 158, 255, 0.15) 0%,
+    rgba(120, 158, 255, 0.5) 50%,
+    rgba(120, 158, 255, 0.15) 100%
+  );
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* 主线流光粒子 */
+.st-line__flow {
+  position: absolute;
+  top: 0;
+  left: -20%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(143, 194, 255, 0.9) 50%,
+    transparent 100%
+  );
+  animation: st-flow 3.2s linear infinite;
+}
+
+@keyframes st-flow {
+  0% {
+    left: -20%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+/* ---- 节点 ---- */
+.st-nodes {
+  position: absolute;
+  inset: 0;
+}
+
+.st-node {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--dv-text);
+  transition: transform 0.2s ease;
+}
+
+.st-node:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.st-node__dot {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--dv-accent);
+  border: 2px solid rgba(2, 6, 23, 0.85);
+  box-shadow: 0 0 10px rgba(120, 158, 255, 0.7);
+}
+
+/* 峰值锚点：放大 + 强调色 + 脉冲 */
+.st-node--peak .st-node__dot {
+  width: 20px;
+  height: 20px;
+  background: var(--dv-transfer);
+  border-color: rgba(2, 6, 23, 0.9);
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.85);
+}
+
+.st-node__pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--dv-transfer);
+  animation: st-pulse 1.8s ease-out infinite;
+}
+
+@keyframes st-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* 激活态 */
+.st-node--active .st-node__dot {
+  box-shadow: 0 0 18px var(--dv-title);
+}
+
+/* 时刻（上方） */
+.st-node__time {
+  font-size: 0.6875em;
+  color: var(--dv-accent);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* 名称（下方） */
+.st-node__label {
+  font-size: 0.8125em;
+  color: var(--dv-text);
+  white-space: nowrap;
+}
+
+.st-node--peak .st-node__label {
+  color: var(--dv-title);
+  font-weight: 600;
+}
+
+/* 预测值 */
+.st-node__value {
+  font-size: 0.9375em;
+  font-weight: 600;
+  color: var(--dv-transfer);
+  font-variant-numeric: tabular-nums;
+}
+
+.st-node--peak .st-node__value {
+  font-size: 1.1em;
+  color: var(--dv-transfer);
+  text-shadow: 0 0 12px rgba(255, 209, 102, 0.6);
+}
+
+/* ---- 分时预测曲线（时间轴下方，与之联动） ---- */
+.st-chart {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(120, 158, 255, 0.22);
+  border-radius: 6px;
+  background: rgba(3, 10, 22, 0.42);
+  padding: 12px 14px 8px;
+}
+
+.st-chart__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.8125em;
+  font-weight: 600;
+  color: var(--dv-title);
+  letter-spacing: 1px;
+}
+
+.st-chart__unit {
+  font-size: 0.6875em;
+  font-weight: 400;
+  color: var(--dv-sub);
+  letter-spacing: 0;
+}
+
+.st-chart__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---- 底部图例 ---- */
+.st-footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 0.6875em;
+  color: var(--dv-sub);
+  padding-top: 12px;
+  border-top: 1px solid var(--dv-panel-border);
+}
+
+.st-footer__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.st-footer__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.st-footer__dot--start {
+  background: var(--dv-accent);
+}
+
+.st-footer__dot--peak {
+  background: var(--dv-transfer);
+}

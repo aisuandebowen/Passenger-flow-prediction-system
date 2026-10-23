@@ -19,13 +19,16 @@
  * 各模块只依赖 src/config（配置）与 src/components、src/hooks（公共件）。
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Background from "@/modules/background/Background";
 import Header from "@/modules/header/Header";
 import Sidebar from "@/modules/sidebar/Sidebar";
 import MetroMap from "@/modules/metro-map/MetroMap";
 import Panels, { type PanelPage } from "@/modules/panels/Panels";
 import LineLoadPanel from "@/modules/panels/panel6/LineLoadPanel";
+import ScenePage from "@/modules/scene/ScenePage";
+import { loadData } from "@/config/data-source";
+import type { SceneMenusData } from "@/modules/scene/types";
 import { layout } from "@/config/layout";
 import { useAutoFit } from "@/utils/autofit";
 import "./App.css";
@@ -40,6 +43,21 @@ export default function App() {
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
   // 侧边栏折叠状态（提升到这里，联动地图/满载率布局）
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // 场景菜单（节假日/大型活动）——用于判断选中菜单是否为场景页
+  const [sceneIds, setSceneIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    loadData<SceneMenusData>("sceneMenus")
+      .then((d) => {
+        const ids = new Set<string>();
+        d.holidays.forEach((s) => ids.add(s.id));
+        d.events.forEach((s) => ids.add(s.id));
+        setSceneIds(ids);
+      })
+      .catch(() => {
+        /* 场景菜单加载失败不影响其他页面 */
+      });
+  }, []);
 
   const handleSelect = useCallback((id: string) => {
     setActiveMenu(id);
@@ -108,6 +126,9 @@ export default function App() {
             <div className="app__lineload">
               <LineLoadPanel />
             </div>
+          ) : sceneIds.has(activeMenu) ? (
+            // 节假日/大型活动：中区预测时间轴 + 右栏预测详情面板
+            <ScenePage sceneId={activeMenu} />
           ) : (
             <>
               {/* 中栏：地图（flex:1 自适应，侧栏折叠时左扩） */}

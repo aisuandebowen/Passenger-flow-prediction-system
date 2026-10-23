@@ -1,0 +1,226 @@
+/* 场景预测面板 —— 节假日/大型活动页右栏 */
+
+.scene-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  width: 100%;
+}
+
+/* 每块面板的槽位：有确定尺寸，PanelCard 在其中 absolute 填充 */
+.scene-panel__slot {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.scene-panel__slot--metrics {
+  flex: 0 0 272px;
+}
+
+.scene-panel__slot--map {
+  flex: 0 0 190px;
+}
+
+.scene-panel__slot--stations {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.scene-panel__slot--conclusions {
+  flex: 0 0 178px;
+}
+
+/* ---- ② 小地图 ---- */
+.scene-panel__slot--map .panel-card__content {
+  position: relative;
+  padding: 6px;
+}
+
+.sp-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.sp-map .metro-map {
+  border-radius: 4px;
+  height: 100%;
+}
+
+/* ---- ① 倒计时 + 峰值卡 ---- */
+.sp-countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sp-countdown__label {
+  font-size: 0.75em;
+  color: var(--dv-sub);
+}
+
+.sp-countdown__num {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--dv-accent);
+  letter-spacing: 1px;
+}
+
+.sp-countdown__num.is-today {
+  color: var(--dv-danger);
+  text-shadow: 0 0 14px rgba(234, 88, 12, 0.7);
+}
+
+.sp-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sp-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: rgba(48, 97, 219, 0.08);
+  border: 1px solid var(--dv-panel-border);
+  border-radius: 5px;
+}
+
+.sp-metric__label {
+  font-size: 0.625em;
+  color: var(--dv-sub);
+}
+
+.sp-metric__value {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--dv-title);
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-metric__value--peak {
+  color: var(--dv-transfer);
+}
+
+.sp-metric__value--yoy {
+  color: var(--dv-danger);
+}
+
+/* ---- ② 重点车站 ---- */
+/* 让内容区成为 flex 列，站点列表才能正确填充滚动 */
+.scene-panel__slot--stations .panel-card__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.sp-station-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sp-station-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--dv-text);
+  font-size: 0.75em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sp-station-item:hover {
+  background: rgba(48, 97, 219, 0.16);
+  border-color: var(--dv-panel-border);
+}
+
+.sp-station-item.is-active {
+  background: rgba(255, 209, 102, 0.14);
+  border-color: var(--dv-transfer);
+}
+
+.sp-station-item__name {
+  flex: 0 0 84px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 横向条（相对最大值） */
+.sp-station-item__bar {
+  flex: 1 1 auto;
+  height: 8px;
+  background: rgba(48, 97, 219, 0.14);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sp-station-item__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(48, 97, 219, 0.4), var(--dv-primary));
+  transition: width 0.4s ease;
+}
+
+.sp-station-item.is-active .sp-station-item__bar-fill {
+  background: linear-gradient(90deg, rgba(255, 209, 102, 0.4), var(--dv-transfer));
+}
+
+.sp-station-item__value {
+  flex: 0 0 auto;
+  font-weight: 600;
+  color: var(--dv-title);
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-station-item__yoy {
+  flex: 0 0 40px;
+  text-align: right;
+  color: var(--dv-danger);
+  font-size: 0.875em;
+}
+
+/* ---- ③ 预测结论 ---- */
+.sp-conclusions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-conclusion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8125em;
+  color: var(--dv-text);
+  line-height: 1.5;
+}
+
+.sp-conclusion__idx {
+  flex: 0 0 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--dv-primary);
+  color: #fff;
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+.sp-conclusion__text {
+  flex: 1 1 auto;
+}

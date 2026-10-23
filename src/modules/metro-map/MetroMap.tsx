@@ -33,11 +33,17 @@ const CITIES: { id: "beijing" | "qingdao"; name: string }[] = [
 export default function MetroMap({
   odEnabled,
   onSelectStation,
+  focusStations,
+  compact = false,
 }: {
   /** 是否绘制 OD 流量光线（由外部页面状态控制） */
   odEnabled?: boolean;
   /** 点击地图站点时的回调，参数为站点名 */
   onSelectStation?: (name: string | null) => void;
+  /** 场景聚焦：这些站点脉冲高亮，其余站弱化；自动聚焦到其包围盒 */
+  focusStations?: string[];
+  /** 紧凑模式（小地图窗）：隐藏城市切换、控制按钮、提示 */
+  compact?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(containerRef);
@@ -90,21 +96,25 @@ export default function MetroMap({
           visibleLines={mapConfig.visibleLines}
           odEnabled={odOn}
           initialZoom={mapConfig.initialZoom}
+          focusStations={focusStations}
+          compact={compact}
         />
       )}
 
-      {/* 城市切换 */}
-      <div className="mm-city-switch">
-        {CITIES.map((c) => (
-          <button
-            key={c.id}
-            className={`mm-city-chip${c.id === cityId ? " is-active" : ""}`}
-            onClick={() => setCityId(c.id)}
-          >
-            {c.name}
-          </button>
-        ))}
-      </div>
+      {/* 城市切换（紧凑模式隐藏） */}
+      {!compact && (
+        <div className="mm-city-switch">
+          {CITIES.map((c) => (
+            <button
+              key={c.id}
+              className={`mm-city-chip${c.id === cityId ? " is-active" : ""}`}
+              onClick={() => setCityId(c.id)}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
