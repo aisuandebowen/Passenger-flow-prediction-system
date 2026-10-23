@@ -9,7 +9,7 @@
  * 走完一份长度时瞬间归零；hover 时暂停。
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import PanelCard from "@/components/PanelCard";
 import { loadData } from "@/config/data-source";
 import { theme } from "@/config/theme";
@@ -66,6 +66,13 @@ export default function AlarmListPanel() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [data]);
 
+  // 各级别统计（真实统计自数据）—— Hooks 必须在提前 return 之前调用
+  const stats = useMemo(() => {
+    const s = { danger: 0, warning: 0, normal: 0 };
+    for (const a of data?.data ?? []) s[a.levelType]++;
+    return s;
+  }, [data]);
+
   if (error) return <PanelCard title="实时告警信息"><div className="panel-error">加载失败：{error}</div></PanelCard>;
   if (!data) return <PanelCard title="实时告警信息"><div className="panel-loading">加载中…</div></PanelCard>;
 
@@ -74,7 +81,20 @@ export default function AlarmListPanel() {
   return (
     <PanelCard
       title={data.title}
-      extra={<span className="alarm-count">{data.data.length} 条</span>}>
+      extra={
+        <span className="alarm-extra">
+          <span className="alarm-stat" style={{ color: theme.level.danger, borderColor: theme.level.danger }}>
+            {stats.danger}
+          </span>
+          <span className="alarm-stat" style={{ color: theme.level.warning, borderColor: theme.level.warning }}>
+            {stats.warning}
+          </span>
+          <span className="alarm-stat" style={{ color: theme.level.normal, borderColor: theme.level.normal }}>
+            {stats.normal}
+          </span>
+          <span className="alarm-count">{data.data.length} 条</span>
+        </span>
+      }>
       <div
         className="alarm-list"
         onMouseEnter={() => (pausedRef.current = true)}
@@ -92,7 +112,10 @@ export default function AlarmListPanel() {
         <div className="alarm-list__viewport">
           <div className="alarm-list__body" ref={bodyRef}>
             {rows.map((row, i) => (
-              <div className="alarm-list__row" key={i} style={{ height: ROW_HEIGHT }}>
+              <div
+                className={`alarm-list__row alarm-list__row--${row.levelType}`}
+                key={i}
+                style={{ height: ROW_HEIGHT }}>
                 {data.columns.map((c) => {
                   const isLevel = c.dataIndex === "level";
                   return (

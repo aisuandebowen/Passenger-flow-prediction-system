@@ -14,3 +14,11 @@
 .panel-error {
   color: var(--dv-danger);
 }
+
+/* 趋势面板预测偏差标注 */
+.st-bias {
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}

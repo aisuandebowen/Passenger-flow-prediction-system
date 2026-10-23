@@ -16,6 +16,8 @@ import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
+  MarkLineComponent,
+  MarkPointComponent,
   type GridComponentOption,
   type TooltipComponentOption,
   type LegendComponentOption,
@@ -39,7 +41,13 @@ interface StationTrendData {
   stations: Record<string, { actual: number[]; forecast: number[] }>;
 }
 
-export default function StationTrendPanel({ station }: { station: string | null }) {
+export default function StationTrendPanel({
+  station,
+  timelineIndex = 0,
+}: {
+  station: string | null;
+  timelineIndex?: number;
+}) {
   const [data, setData] = useState<StationTrendData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,6 +120,40 @@ export default function StationTrendPanel({ station }: { station: string | null 
           data: s.actual,
           lineStyle: { width: 2, color: theme.primary },
           itemStyle: { color: theme.primary },
+          markLine: {
+            silent: true,
+            symbol: "none",
+            lineStyle: { color: theme.transferStation, width: 1.5, type: "dashed" },
+            label: {
+              show: true,
+              position: "end",
+              color: theme.transferStation,
+              fontSize: fz(10),
+              formatter: data.xAxis[timelineIndex] ?? "",
+            },
+            data: [{ xAxis: timelineIndex }],
+          },
+          markPoint: {
+            silent: true,
+            symbol: "circle",
+            symbolSize: 9,
+            itemStyle: {
+              color: theme.transferStation,
+              borderColor: "#fff",
+              borderWidth: 1.5,
+              shadowColor: "rgba(255, 209, 102, 0.8)",
+              shadowBlur: 10,
+            },
+            label: {
+              show: true,
+              position: "top",
+              color: theme.transferStation,
+              fontSize: fz(10),
+              fontWeight: 600,
+              formatter: () => `${s.actual[timelineIndex] ?? ""}`,
+            },
+            data: [{ name: "当前时刻", coord: [timelineIndex, s.actual[timelineIndex] ?? 0] }],
+          },
           areaStyle: {
             color: {
               type: "linear",
@@ -125,7 +167,7 @@ export default function StationTrendPanel({ station }: { station: string | null 
         },
       ],
     };
-  }, [data, station]);
+  }, [data, station, timelineIndex]);
 
   if (!data || !option)
     return (
@@ -135,11 +177,32 @@ export default function StationTrendPanel({ station }: { station: string | null 
     );
 
   const key = station && data.stations[station] ? station : data.defaultStation;
+  const s = data.stations[key];
+
+  // 预测偏差：平均绝对百分比误差（MAPE，真实计算自 forecast/actual）
+  // 注意：这是普通计算（非 Hook），必须放在提前 return 之后，否则 hooks 顺序会变。
+  const n = Math.min(s.forecast.length, s.actual.length);
+  let mape = 0;
+  if (n > 0) {
+    let sum = 0;
+    for (let i = 0; i < n; i++) {
+      if (s.actual[i] === 0) continue;
+      sum += Math.abs(s.forecast[i] - s.actual[i]) / s.actual[i];
+    }
+    mape = (sum / n) * 100;
+  }
+  const mapeColor = mape < 3 ? "#4ade80" : mape < 8 ? "#ffa800" : "#ea580c";
 
   return (
-    <PanelCard title={`${key}${data.title}`} extra={<span>单位：{data.unit}</span>}>
+    <PanelCard
+      title={`${key}${data.title}`}
+      extra={
+        <span className="st-bias" style={{ color: mapeColor }}>
+          预测偏差 {mape.toFixed(1)}%
+        </span>
+      }>
       <Chart<LineOption>
-        use={[LineChart, GridComponent, TooltipComponent, LegendComponent]}
+        use={[LineChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, MarkPointComponent]}
         option={option}
       />
     </PanelCard>

@@ -70,6 +70,38 @@
   user-select: none;
 }
 
+/* ---- OD 流量开关（右下角） ---- */
+.mm-od-toggle {
+  position: absolute;
+  right: 14px;
+  bottom: 128px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 0.58em;
+  letter-spacing: 1px;
+  color: var(--dv-sub, rgba(188, 215, 255, 0.6));
+  background: rgba(4, 20, 36, 0.78);
+  border: 1px solid var(--dv-border, rgba(120, 158, 255, 0.35));
+  border-radius: 999px;
+  cursor: pointer;
+  z-index: 3;
+  transition: all 0.2s;
+}
+
+.mm-od-toggle:hover {
+  color: var(--dv-text, #bdcfff);
+  border-color: var(--dv-accent, #789eff);
+}
+
+.mm-od-toggle.is-on {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(48, 97, 219, 0.9), rgba(90, 140, 255, 0.85));
+  border-color: var(--dv-accent, #789eff);
+  box-shadow: 0 0 12px rgba(48, 97, 219, 0.55);
+}
+
 /* ---- 缩放按钮 ---- */
 .mm-controls {
   position: absolute;
@@ -122,15 +154,138 @@
   }
 }
 
-/* ---- 城市切换 ---- */
+/* ---- 城市切换（第一行右侧，与 KPI 横幅同排） ---- */
 .mm-city-switch {
   position: absolute;
   right: 14px;
   top: 12px;
   display: flex;
   gap: 8px;
-  z-index: 3;
+  z-index: 21;
 }
+
+/* ---- 线路筛选（第二行最左侧，位于 KPI 横幅正下方） ---- */
+.mm-line-filter {
+  position: absolute;
+  left: 14px;
+  top: 96px; /* KPI 横幅：top 12 + 高 76 + 间距 8 */
+  z-index: 4;
+}
+
+.mm-line-filter__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  font-size: 0.6em;
+  letter-spacing: 1px;
+  color: var(--dv-text, #bdcfff);
+  background: rgba(4, 20, 36, 0.78);
+  border: 1px solid var(--dv-border, rgba(120, 158, 255, 0.35));
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.mm-line-filter__toggle:hover {
+  border-color: var(--dv-accent, #789eff);
+  color: #fff;
+}
+
+.mm-line-filter__toggle.has-value {
+  color: #fff;
+  border-color: var(--dv-accent, #789eff);
+}
+
+.mm-line-filter__toggle.is-open {
+  border-color: var(--dv-accent, #789eff);
+  background: rgba(48, 97, 219, 0.35);
+}
+
+.mm-line-filter__arrow {
+  transition: transform 0.2s;
+}
+
+.mm-line-filter__toggle.is-open .mm-line-filter__arrow {
+  transform: rotate(180deg);
+}
+
+.mm-line-filter__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 360px;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(7, 24, 48, 0.97), rgba(4, 16, 34, 0.97));
+  border: 1px solid var(--dv-border, rgba(120, 158, 255, 0.4));
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+.mm-line-filter__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(120, 158, 255, 0.15);
+}
+
+.mm-line-filter__option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 0.56em;
+  letter-spacing: 0.5px;
+  color: var(--dv-text, #bdcfff);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+
+.mm-line-filter__option span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mm-line-filter__option:hover {
+  background: rgba(48, 97, 219, 0.25);
+  border-color: rgba(120, 158, 255, 0.4);
+}
+
+.mm-line-filter__option.is-active {
+  color: #fff;
+  background: rgba(48, 97, 219, 0.4);
+  border-color: var(--dv-accent, #789eff);
+}
+
+.mm-line-filter__all {
+  font-weight: 600;
+}
+
+.mm-line-filter__count {
+  margin-left: auto;
+  font-size: 0.85em;
+  color: rgba(188, 215, 255, 0.5);
+}
+
+.mm-line-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+
+
 
 .mm-city-chip {
   padding: 3px 14px;

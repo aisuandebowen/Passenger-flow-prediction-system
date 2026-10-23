@@ -4,6 +4,38 @@
   color: var(--dv-warning);
 }
 
+/* 标题右侧：级别统计胶囊 + 总数 */
+.alarm-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alarm-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid;
+  border-radius: 3px;
+  font-size: 0.6875em;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 紧急告警行：左侧红条 + 淡红底强调 */
+.alarm-list__row--danger {
+  background: rgba(234, 88, 12, 0.08);
+  box-shadow: inset 2px 0 0 var(--dv-danger);
+}
+
+.alarm-list__row--warning {
+  background: rgba(255, 168, 0, 0.05);
+}
+
 .alarm-list {
   width: 100%;
   height: 100%;

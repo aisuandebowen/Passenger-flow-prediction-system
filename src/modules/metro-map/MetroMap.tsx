@@ -19,6 +19,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { loadData } from "@/config/data-source";
+import { theme } from "@/config/theme";
 import { mapConfig } from "@/config/map";
 import { useSize } from "@/hooks/useSize";
 import GeoMapView, { CityGeoData } from "./GeoMapView";
@@ -32,18 +33,27 @@ const CITIES: { id: "beijing" | "qingdao"; name: string }[] = [
 
 export default function MetroMap({
   odEnabled,
+  onToggleOd,
   onSelectStation,
   focusStations,
   compact = false,
+  activeLine,
+  onActiveLineChange,
 }: {
   /** 是否绘制 OD 流量光线（由外部页面状态控制） */
   odEnabled?: boolean;
+  /** OD 开关切换回调（点击右下角按钮时触发） */
+  onToggleOd?: () => void;
   /** 点击地图站点时的回调，参数为站点名 */
   onSelectStation?: (name: string | null) => void;
   /** 场景聚焦：这些站点脉冲高亮，其余站弱化；自动聚焦到其包围盒 */
   focusStations?: string[];
   /** 紧凑模式（小地图窗）：隐藏城市切换、控制按钮、提示 */
   compact?: boolean;
+  /** 受控：当前选中线路（null = 全网）。由外部提升管理，供 KPI 联动 */
+  activeLine?: string | null;
+  /** 线路选中变化回调（点击 chips 时触发，外部同步状态） */
+  onActiveLineChange?: (lineId: string | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(containerRef);
@@ -51,10 +61,42 @@ export default function MetroMap({
   const [city, setCity] = useState<CityGeoData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<string | null>(null);
+  // 内部兜底状态（仅当外部未受控时使用，保证向后兼容）
+  const [internalLine, setInternalLine] = useState<string | null>(null);
+  // 线路筛选面板展开/收起
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  // 上一次加载的城市 id（null = 尚未加载过；用于仅在真正切换城市时重置线路）
+  const prevCityId = useRef<string | null>(null);
   const { overrides, setStationColor, setLineColor } = useOverrides(cityId);
+
+  // 选中线路：优先用外部受控值，否则内部兜底（保证 ScenePanel 等旧调用不受影响）
+  const isControlled = activeLine !== undefined;
+  const currentLine = isControlled ? activeLine : internalLine;
+  const setCurrentLine = (id: string | null) => {
+    if (isControlled) onActiveLineChange?.(id);
+    else setInternalLine(id);
+  };
+
+  // 点击地图空白处收起筛选面板
+  useEffect(() => {
+    if (!filterOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    window.addEventListener("pointerdown", onDown);
+    return () => window.removeEventListener("pointerdown", onDown);
+  }, [filterOpen]);
 
   // 外部是否显式控制 OD 开关；未传则回退到 mapConfig
   const odOn = odEnabled ?? mapConfig.od.enabled;
+
+  // 当前选中线路的名称与颜色（入口按钮展示用）
+  const activeLineObj = city?.lines.find((l) => l.id === currentLine);
+  const activeLineName = activeLineObj ? activeLineObj.name.replace(/号线.*$/, "号线") : "";
+  const activeLineColor = activeLineObj?.color ?? theme.accent;
 
   // 选中站点变化时同步给外部（趋势面板联动）
   const handleSelect = (name: string | null) => {
@@ -68,6 +110,12 @@ export default function MetroMap({
     setCity(null);
     setError(null);
     setSelection(null);
+    // 切换城市后回到「全网」（对比上一次 cityId，仅在真正切换时重置；
+    // 直接跳过首次挂载会被 StrictMode 双挂载绕过）
+    if (prevCityId.current !== null && prevCityId.current !== cityId) {
+      setCurrentLine(null);
+    }
+    prevCityId.current = cityId;
     loadData<CityGeoData>("metroCity", { city: cityId })
       .then((d) => {
         if (alive) setCity(d);
@@ -93,12 +141,73 @@ export default function MetroMap({
           onSetLineColor={setLineColor}
           selection={selection}
           onSelect={handleSelect}
-          visibleLines={mapConfig.visibleLines}
+          visibleLines={currentLine ? [currentLine] : mapConfig.visibleLines}
           odEnabled={odOn}
           initialZoom={mapConfig.initialZoom}
           focusStations={focusStations}
           compact={compact}
         />
+      )}
+
+      {/* 线路筛选（紧凑模式隐藏）：收起为入口按钮，点击展开下拉面板 */}
+      {!compact && city && (
+        <div className="mm-line-filter" ref={filterRef}>
+          <button
+            className={`mm-line-filter__toggle${currentLine !== null ? " has-value" : ""}${filterOpen ? " is-open" : ""}`}
+            onClick={() => setFilterOpen((o) => !o)}
+          >
+            {currentLine === null ? (
+              "线路筛选"
+            ) : (
+              <>
+                <i className="mm-line-chip__dot" style={{ background: activeLineColor }} />
+                {activeLineName}
+              </>
+            )}
+            <svg
+              className="mm-line-filter__arrow"
+              viewBox="0 0 24 24"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          {filterOpen && (
+            <div className="mm-line-filter__panel">
+              <button
+                className={`mm-line-filter__option${currentLine === null ? " is-active" : ""}`}
+                onClick={() => {
+                  setCurrentLine(null);
+                  setFilterOpen(false);
+                }}
+              >
+                <span className="mm-line-filter__all">全网</span>
+                <span className="mm-line-filter__count">{city.lines.length} 条线路</span>
+              </button>
+              <div className="mm-line-filter__grid">
+                {city.lines.map((line) => (
+                  <button
+                    key={line.id}
+                    className={`mm-line-filter__option${currentLine === line.id ? " is-active" : ""}`}
+                    onClick={() => {
+                      setCurrentLine(line.id);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    <i className="mm-line-chip__dot" style={{ background: line.color }} />
+                    <span>{line.name.replace(/号线.*$/, "号线")}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* 城市切换（紧凑模式隐藏） */}
@@ -114,6 +223,21 @@ export default function MetroMap({
             </button>
           ))}
         </div>
+      )}
+
+      {/* OD 流量开关（右下角，默认关闭） */}
+      {!compact && (
+        <button
+          className={`mm-od-toggle${odOn ? " is-on" : ""}`}
+          onClick={onToggleOd}
+          title={odOn ? "关闭 OD 流向光线" : "开启 OD 流向光线"}
+          aria-pressed={odOn}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 17c3-6 6-6 9 0s6 6 9 0" />
+            <path d="M3 12c3-4 6-4 9 0s6 4 9 0" opacity="0.55" />
+          </svg>
+          <span>OD 流向</span>
+        </button>
       )}
     </div>
   );

@@ -1,0 +1,94 @@
+/* 线路状态页顶部 KPI 总览横幅 */
+
+.lsk {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  /* 第一行：左侧给 KPI，右侧留出城市切换按钮的空间（约 120px + 边距） */
+  right: 150px;
+  height: 76px; /* 固定高度，下方线路筛选按此定位（12 + 76 + 8 = 96px） */
+  display: flex;
+  gap: 0;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+/* 当前范围标签（全网 / 某线路名） */
+.lsk__scope {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #fff;
+  white-space: nowrap;
+  background: linear-gradient(135deg, rgba(48, 97, 219, 0.9), rgba(90, 140, 255, 0.85));
+  border: 1px solid var(--dv-accent, #789eff);
+  border-radius: 8px 0 0 8px;
+}
+
+.lsk__item {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 8px 12px;
+  overflow: hidden; /* 固定高度内裁剪，防止内容把横幅撑高遮挡下方面板 */
+  background: rgba(4, 20, 36, 0.82);
+  border: 1px solid rgba(120, 158, 255, 0.35);
+  border-right: none;
+  backdrop-filter: blur(4px);
+}
+
+.lsk__item:last-child {
+  border-right: 1px solid rgba(120, 158, 255, 0.35);
+  border-radius: 0 8px 8px 0;
+}
+
+.lsk__meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lsk__label {
+  font-size: 0.62em;
+  letter-spacing: 2px;
+  color: var(--dv-sub);
+  white-space: nowrap;
+}
+
+.lsk__value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  line-height: 1.1;
+  white-space: nowrap; /* 值+单位永不换行，防止数字动画期间溢出布局 */
+}
+
+.lsk__unit {
+  font-size: 0.68em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+  flex: none;
+}
+
+.lsk__note {
+  font-size: 0.54em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lsk__spark {
+  width: 72px;
+  height: 100%;
+  flex: none;
+  align-self: center;
+}

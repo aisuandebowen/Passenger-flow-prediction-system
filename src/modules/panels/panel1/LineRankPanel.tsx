@@ -27,7 +27,7 @@ type BarOption = ComposeOption<
 interface Panel1Data {
   title: string;
   unit: string;
-  data: { name: string; value: number }[];
+  data: { name: string; value: number; change?: number }[];
 }
 
 export default function LineRankPanel() {
@@ -49,15 +49,17 @@ export default function LineRankPanel() {
     if (!data) return null;
     const total = data.data.reduce((s, d) => s + d.value, 0);
     return {
-    grid: { containLabel: true, top: 8, left: 0, right: 44, bottom: 4 },
+    grid: { containLabel: true, top: 8, left: 0, right: 58, bottom: 4 },
     tooltip: {
       trigger: "axis",
       backgroundColor: "rgba(4,20,36,0.92)",
       borderColor: theme.panelBorder,
       textStyle: { color: theme.text, fontSize: fz(12) },
       formatter: (params: unknown) => {
-        const p = (params as Array<{ name: string; value: number }>)[0];
-        return `${p.name}：${p.value} ${data.unit}`;
+        const p = (params as Array<{ name: string; value: number; dataIndex: number }>)[0];
+        const row = data.data[p.dataIndex];
+        const ch = row.change != null ? `　同比 ${row.change > 0 ? "+" : ""}${row.change}%` : "";
+        return `${p.name}：${p.value} ${data.unit}${ch}`;
       },
     },
     xAxis: {
@@ -95,9 +97,19 @@ export default function LineRankPanel() {
         label: {
           show: true,
           position: "right",
-          color: theme.accent,
           fontSize: fz(11),
-          formatter: "{c}",
+          formatter: (p: unknown) => {
+            const idx = (p as { dataIndex: number }).dataIndex;
+            const row = data.data[idx];
+            const ch = row.change;
+            if (ch == null) return `{v|${row.value}}`;
+            const color = ch > 0 ? "#4ade80" : ch < 0 ? "#ea580c" : theme.subText;
+            return `{v|${row.value}}  {c|${ch > 0 ? "▲" : ch < 0 ? "▼" : ""}${Math.abs(ch)}%}`;
+          },
+          rich: {
+            v: { color: theme.accent, fontWeight: 600 },
+            c: { color: theme.subText, fontSize: fz(9) },
+          },
         },
         data: data.data.map((d) => d.value),
       },

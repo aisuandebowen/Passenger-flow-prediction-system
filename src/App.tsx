@@ -26,6 +26,8 @@ import Sidebar from "@/modules/sidebar/Sidebar";
 import MetroMap from "@/modules/metro-map/MetroMap";
 import Panels, { type PanelPage } from "@/modules/panels/Panels";
 import LineLoadPanel from "@/modules/panels/panel6/LineLoadPanel";
+import LineStatusKpi from "@/modules/panels/LineStatusKpi";
+import TimelineBar from "@/modules/panels/TimelineBar";
 import ScenePage from "@/modules/scene/ScenePage";
 import { loadData } from "@/config/data-source";
 import type { SceneMenusData } from "@/modules/scene/types";
@@ -36,13 +38,34 @@ import "./App.css";
 /** 默认选中的左侧菜单：线网管理 -> 线路状态 */
 const DEFAULT_MENU = "line-status";
 
+/** 时间轴时刻总数（06:00–23:00，18 个点，与趋势面板 xAxis 对齐） */
+const TIMELINE_COUNT = 18;
+
 export default function App() {
   const { scale, offsetX, offsetY } = useAutoFit();
   const [activeMenu, setActiveMenu] = useState<string>(DEFAULT_MENU);
   // 地图当前选中的站点（趋势面板联动显示该站数据）
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
+  // 当前选中的线路（null=全网；提升到此，供地图筛选与 KPI 横幅联动）
+  // 支持 URL 深链：?line=M10 直接选中 10 号线（分享/演示用）
+  const [activeLine, setActiveLine] = useState<string | null>(() => {
+    const v = new URLSearchParams(window.location.search).get("line");
+    return v || null;
+  });
+  // 时间轴回放：当前时刻索引（0–17）与播放状态
+  const [timelineIndex, setTimelineIndex] = useState(0);
+  const [timelinePlaying, setTimelinePlaying] = useState(false);
   // 侧边栏折叠状态（提升到这里，联动地图/满载率布局）
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // 时间轴播放：播放时每 800ms 推进一个时刻，到末尾回到起点
+  useEffect(() => {
+    if (!timelinePlaying) return;
+    const id = window.setInterval(() => {
+      setTimelineIndex((i) => (i + 1) % TIMELINE_COUNT);
+    }, 800);
+    return () => window.clearInterval(id);
+  }, [timelinePlaying]);
 
   // 场景菜单（节假日/大型活动）——用于判断选中菜单是否为场景页
   const [sceneIds, setSceneIds] = useState<Set<string>>(new Set());
@@ -78,8 +101,9 @@ export default function App() {
     return "line-status";
   }, [activeMenu]);
 
-  // 车站管理页关闭地图 OD 流动线
-  const odEnabled = page !== "station-manage";
+  // 车站管理页关闭地图 OD 流动线；其余页面 OD 默认关闭，由右下角按钮手动开启
+  const [odEnabled, setOdEnabled] = useState(false);
+  const showOd = page !== "station-manage" && odEnabled;
 
   const sidebarWidth = sidebarCollapsed
     ? layout.sidebar.collapsedWidth
@@ -133,11 +157,30 @@ export default function App() {
             <>
               {/* 中栏：地图（flex:1 自适应，侧栏折叠时左扩） */}
               <div className="app__map">
-                <MetroMap odEnabled={odEnabled} onSelectStation={handleSelectStation} />
+                <MetroMap
+                  odEnabled={showOd}
+                  onToggleOd={() => setOdEnabled((v) => !v)}
+                  onSelectStation={handleSelectStation}
+                  activeLine={activeLine}
+                  onActiveLineChange={setActiveLine}
+                />
+                {/* 线路状态页顶部 KPI 总览横幅（悬浮于地图上方，随线路联动） */}
+                <LineStatusKpi activeLine={activeLine} />
+                {/* 时间轴回放条（悬浮于地图底部） */}
+                <TimelineBar
+                  index={timelineIndex}
+                  onChange={setTimelineIndex}
+                  playing={timelinePlaying}
+                  onTogglePlay={() => setTimelinePlaying((p) => !p)}
+                />
               </div>
 
               {/* 右栏：面板 */}
-              <Panels page={page} selectedStation={selectedStation} />
+              <Panels
+                page={page}
+                selectedStation={selectedStation}
+                timelineIndex={timelineIndex}
+              />
             </>
           )}
         </div>
