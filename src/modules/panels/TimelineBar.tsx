@@ -12,18 +12,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { theme } from "@/config/theme";
+import { FLOW_BY_HOUR, FLOW_HOURS } from "@/config/flow";
 import "./TimelineBar.css";
 
-const TIMES = [
-  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
-  "20:00", "21:00", "22:00", "23:00",
-];
-
-/** 全网分时客流（万人次）——与 line-status-kpi-lines.json 的 flow 趋势一致，早晚双峰 */
-const FLOW_BY_HOUR = [
-  42, 48, 66, 88, 102, 96, 84, 78, 82, 95, 108, 124, 132, 118, 98, 86, 74, 62,
-];
+const TIMES = [...FLOW_HOURS];
 
 export default function TimelineBar({
   index,

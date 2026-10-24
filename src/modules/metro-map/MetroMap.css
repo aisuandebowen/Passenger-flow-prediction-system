@@ -70,11 +70,19 @@
   user-select: none;
 }
 
-/* ---- OD 流量开关（右下角） ---- */
-.mm-od-toggle {
+/* ---- 右下角功能开关容器（客流热力 / OD 流向） ---- */
+.mm-toggles {
   position: absolute;
   right: 14px;
   bottom: 128px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 3;
+}
+
+/* ---- OD 流量 / 客流热力开关 ---- */
+.mm-od-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -86,7 +94,6 @@
   border: 1px solid var(--dv-border, rgba(120, 158, 255, 0.35));
   border-radius: 999px;
   cursor: pointer;
-  z-index: 3;
   transition: all 0.2s;
 }
 
@@ -100,6 +107,46 @@
   background: linear-gradient(135deg, rgba(48, 97, 219, 0.9), rgba(90, 140, 255, 0.85));
   border-color: var(--dv-accent, #789eff);
   box-shadow: 0 0 12px rgba(48, 97, 219, 0.55);
+}
+
+/* ---- 客流热力图例（左下角） ---- */
+.mm-heat-legend {
+  position: absolute;
+  left: 14px;
+  bottom: 72px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px;
+  background: rgba(4, 20, 36, 0.72);
+  border: 1px solid rgba(120, 158, 255, 0.28);
+  border-radius: 6px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.mm-heat-legend__title {
+  font-size: 0.58em;
+  letter-spacing: 1px;
+  color: var(--dv-sub, rgba(188, 215, 255, 0.6));
+  margin-right: 2px;
+}
+
+.mm-heat-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.54em;
+  letter-spacing: 0.5px;
+  color: var(--dv-text, #bdcfff);
+  white-space: nowrap;
+}
+
+.mm-heat-legend__item i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
 }
 
 /* ---- 缩放按钮 ---- */

@@ -39,6 +39,7 @@ export default function MetroMap({
   compact = false,
   activeLine,
   onActiveLineChange,
+  timelineIndex,
 }: {
   /** 是否绘制 OD 流量光线（由外部页面状态控制） */
   odEnabled?: boolean;
@@ -54,6 +55,8 @@ export default function MetroMap({
   activeLine?: string | null;
   /** 线路选中变化回调（点击 chips 时触发，外部同步状态） */
   onActiveLineChange?: (lineId: string | null) => void;
+  /** 当前时刻索引（0–17，联动时间轴，驱动客流脉冲） */
+  timelineIndex?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(containerRef);
@@ -68,7 +71,27 @@ export default function MetroMap({
   const filterRef = useRef<HTMLDivElement>(null);
   // 上一次加载的城市 id（null = 尚未加载过；用于仅在真正切换城市时重置线路）
   const prevCityId = useRef<string | null>(null);
+  // 客流热力着色：站点名 -> 满载率（默认开启，右下角可切换）
+  const [heatEnabled, setHeatEnabled] = useState(true);
+  const [stationLoad, setStationLoad] = useState<Record<string, number> | null>(null);
+  // 客流脉冲：站点圆点/线路随当前时刻客流变化大小（默认开启）
+  const [pulseEnabled, setPulseEnabled] = useState(true);
   const { overrides, setStationColor, setLineColor } = useOverrides(cityId);
+
+  // 加载站点满载率数据（客流热力着色用）
+  useEffect(() => {
+    let alive = true;
+    loadData<Record<string, number>>("stationLoad")
+      .then((d) => {
+        if (alive) setStationLoad(d);
+      })
+      .catch(() => {
+        if (alive) setStationLoad(null); // 加载失败则回退到普通配色
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // 选中线路：优先用外部受控值，否则内部兜底（保证 ScenePanel 等旧调用不受影响）
   const isControlled = activeLine !== undefined;
@@ -146,6 +169,10 @@ export default function MetroMap({
           initialZoom={mapConfig.initialZoom}
           focusStations={focusStations}
           compact={compact}
+          heatEnabled={heatEnabled}
+          stationLoad={stationLoad}
+          pulseEnabled={pulseEnabled}
+          timelineIndex={timelineIndex}
         />
       )}
 
@@ -225,19 +252,42 @@ export default function MetroMap({
         </div>
       )}
 
-      {/* OD 流量开关（右下角，默认关闭） */}
+      {/* 右下角功能开关（客流热力 / OD 流向） */}
       {!compact && (
-        <button
-          className={`mm-od-toggle${odOn ? " is-on" : ""}`}
-          onClick={onToggleOd}
-          title={odOn ? "关闭 OD 流向光线" : "开启 OD 流向光线"}
-          aria-pressed={odOn}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 17c3-6 6-6 9 0s6 6 9 0" />
-            <path d="M3 12c3-4 6-4 9 0s6 4 9 0" opacity="0.55" />
-          </svg>
-          <span>OD 流向</span>
-        </button>
+        <div className="mm-toggles">
+          <button
+            className={`mm-od-toggle${heatEnabled ? " is-on" : ""}`}
+            onClick={() => setHeatEnabled((v) => !v)}
+            title={heatEnabled ? "关闭客流热力着色" : "开启客流热力着色"}
+            aria-pressed={heatEnabled}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3.2" />
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+            </svg>
+            <span>客流热力</span>
+          </button>
+          <button
+            className={`mm-od-toggle${pulseEnabled ? " is-on" : ""}`}
+            onClick={() => setPulseEnabled((v) => !v)}
+            title={pulseEnabled ? "关闭客流脉冲（站点随时刻变化）" : "开启客流脉冲"}
+            aria-pressed={pulseEnabled}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12h4l2-6 4 12 2-6h8" />
+            </svg>
+            <span>客流脉冲</span>
+          </button>
+          <button
+            className={`mm-od-toggle${odOn ? " is-on" : ""}`}
+            onClick={onToggleOd}
+            title={odOn ? "关闭 OD 流向光线" : "开启 OD 流向光线"}
+            aria-pressed={odOn}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 17c3-6 6-6 9 0s6 6 9 0" />
+              <path d="M3 12c3-4 6-4 9 0s6 4 9 0" opacity="0.55" />
+            </svg>
+            <span>OD 流向</span>
+          </button>
+        </div>
       )}
     </div>
   );

@@ -53,7 +53,11 @@ export default function App() {
     return v || null;
   });
   // 时间轴回放：当前时刻索引（0–17）与播放状态
-  const [timelineIndex, setTimelineIndex] = useState(0);
+  // 支持 URL 深链：?time=17 初始定位到 18:00（演示/截图用）
+  const [timelineIndex, setTimelineIndex] = useState(() => {
+    const v = Number(new URLSearchParams(window.location.search).get("time"));
+    return Number.isInteger(v) && v >= 0 && v < TIMELINE_COUNT ? v : 0;
+  });
   const [timelinePlaying, setTimelinePlaying] = useState(false);
   // 侧边栏折叠状态（提升到这里，联动地图/满载率布局）
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -163,6 +167,7 @@ export default function App() {
                   onSelectStation={handleSelectStation}
                   activeLine={activeLine}
                   onActiveLineChange={setActiveLine}
+                  timelineIndex={timelineIndex}
                 />
                 {/* 线路状态页顶部 KPI 总览横幅（悬浮于地图上方，随线路联动） */}
                 <LineStatusKpi activeLine={activeLine} />

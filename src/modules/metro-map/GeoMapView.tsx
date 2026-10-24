@@ -17,6 +17,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { theme } from "@/config/theme";
+import { FLOW_BY_HOUR, FLOW_PEAK, LOAD_BASE } from "@/config/flow";
 import { apply, clampCenter, Fit, panBy, projectLngLat, ViewState, zoomAround } from "./projection";
 import type { Overrides } from "./colors";
 import StationPopup from "./StationPopup";
@@ -89,6 +90,25 @@ const LABEL_CELL = 78;
 /** 站点点击命中半径（屏幕 px） */
 const HIT_RADIUS = 22;
 
+/**
+ * 客流热力分级：按满载率把站点分成四级着色（与 line-load.json 的超载/拥挤口径一致）。
+ *   舒适(绿) <80 ≤ 一般(黄) <100 ≤ 拥挤(橙) <120 ≤ 严重拥挤(红)
+ * 国内配色习惯：越拥挤越红，越舒适越绿。
+ */
+const LOAD_LEVELS = [
+  { max: 80, color: "#3ddc84" }, // 舒适（绿）
+  { max: 100, color: "#ffd166" }, // 一般（黄，换乘站同色系）
+  { max: 120, color: "#ff9f43" }, // 拥挤（橙）
+  { max: Infinity, color: "#ff4d4f" }, // 严重拥挤（红）
+] as const;
+
+function loadColor(load: number): string {
+  for (const lv of LOAD_LEVELS) {
+    if (load < lv.max) return lv.color;
+  }
+  return LOAD_LEVELS[LOAD_LEVELS.length - 1].color;
+}
+
 const OD_ANIM = {
   dashSpeed: 60,
   dotsPerLine: 2,
@@ -116,6 +136,14 @@ export interface GeoMapViewProps {
   focusStations?: string[] | null;
   /** 紧凑模式（小地图窗）：隐藏缩放按钮与操作提示 */
   compact?: boolean;
+  /** 客流热力着色开关（按站点满载率着色） */
+  heatEnabled?: boolean;
+  /** 站点名 -> 满载率（客流热力着色数据，null = 未加载） */
+  stationLoad?: Record<string, number> | null;
+  /** 客流脉冲开关（站点圆点/线路随当前时刻客流变化大小） */
+  pulseEnabled?: boolean;
+  /** 当前时刻索引（0–17，对应 FLOW_HOURS；用于客流脉冲） */
+  timelineIndex?: number;
 }
 
 export default function GeoMapView(props: GeoMapViewProps) {
@@ -246,8 +274,30 @@ export default function GeoMapView(props: GeoMapViewProps) {
     const custom = props.overrides.station[s.name];
     if (custom) return custom;
     if (s.transfer) return theme.transferStation;
+    // 客流热力着色：按站点满载率分级（舒适/一般/拥挤/严重拥挤）
+    if (props.heatEnabled && props.stationLoad) {
+      const load = props.stationLoad[s.name];
+      if (load !== undefined) return loadColor(load);
+    }
     const own = s.lines.find((id) => shownLineIds.has(id));
     return own ? lineColor(own) : theme.station;
+  };
+
+  // ---- 客流脉冲：站点/线路随当前时刻客流变化大小 ----
+  // 全网分时客流系数（0–1，按峰值归一）
+  const flowRatio = useMemo(() => {
+    const idx = props.timelineIndex ?? 0;
+    return FLOW_BY_HOUR[Math.min(idx, FLOW_BY_HOUR.length - 1)] / FLOW_PEAK;
+  }, [props.timelineIndex]);
+
+  /** 站点脉冲系数：满载率越高、当前时刻客流越大 → 圆点越大（0.45–1.65 区间） */
+  const pulseFactor = (s: GeoStation) => {
+    if (!props.pulseEnabled) return 1;
+    const load = props.stationLoad?.[s.name];
+    const loadRatio = load !== undefined ? load / LOAD_BASE : 1;
+    // 客流系数 = 当前时刻全网客流占比 × 站点满载率相对强度
+    const intensity = flowRatio * loadRatio;
+    return 0.45 + 1.1 * Math.min(intensity, 1.1);
   };
 
   // ---- 所有站点的屏幕坐标（一次投影，处处复用） ----
@@ -487,13 +537,24 @@ export default function GeoMapView(props: GeoMapViewProps) {
               })
               .join(" ") + (line.loop ? " Z" : "");
           const color = lineColor(line.id);
+          // 线路脉冲系数：该线路平均满载率 × 当前时刻客流
+          let linePulse = 1;
+          if (props.pulseEnabled && props.stationLoad) {
+            const loads = line.stations
+              .map((s) => props.stationLoad?.[s.name])
+              .filter((v): v is number => v !== undefined);
+            if (loads.length) {
+              const avg = loads.reduce((a, b) => a + b, 0) / loads.length;
+              linePulse = 0.72 + 0.55 * Math.min((avg / LOAD_BASE) * flowRatio, 1.2);
+            }
+          }
           return (
             <g key={line.id} opacity={sampleMode ? 0.14 : 1}>
               {/* 暗色描边打底，增强与底图的对比 */}
-              <path d={d} fill="none" stroke="rgba(3, 8, 26, 0.65)" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
+              <path d={d} fill="none" stroke="rgba(3, 8, 26, 0.65)" strokeWidth={5 * linePulse} strokeLinejoin="round" strokeLinecap="round" />
               {/* 发光 */}
-              <path d={d} fill="none" stroke={color} strokeWidth={6.5} strokeLinejoin="round" strokeLinecap="round" opacity={0.16} />
-              <path d={d} fill="none" stroke={color} strokeWidth={2.7} strokeLinejoin="round" strokeLinecap="round" opacity={0.95} />
+              <path d={d} fill="none" stroke={color} strokeWidth={6.5 * linePulse} strokeLinejoin="round" strokeLinecap="round" opacity={0.16} />
+              <path d={d} fill="none" stroke={color} strokeWidth={2.7 * linePulse} strokeLinejoin="round" strokeLinecap="round" opacity={0.95} />
             </g>
           );
         })}
@@ -518,14 +579,21 @@ export default function GeoMapView(props: GeoMapViewProps) {
                 key={s.name}
                 cx={x}
                 cy={y}
-                r={4.4}
+                r={4.4 * pulseFactor(s)}
                 fill={isFocus ? theme.transferStation : stationColor(s)}
                 stroke="rgba(2, 6, 23, 0.85)"
                 strokeWidth={1.4}
                 opacity={dotOpacity}
               />
             ) : (
-              <circle key={s.name} cx={x} cy={y} r={2.7} fill={stationColor(s)} opacity={dim ? 0.2 : 0.92} />
+              <circle
+                key={s.name}
+                cx={x}
+                cy={y}
+                r={(props.heatEnabled ? 3.6 : 2.7) * pulseFactor(s)}
+                fill={stationColor(s)}
+                opacity={dim ? 0.2 : 0.95}
+              />
             );
           })}
           {/* 场景聚焦：相关站脉冲高亮圈 */}
@@ -612,6 +680,17 @@ export default function GeoMapView(props: GeoMapViewProps) {
 
       {/* 操作提示 */}
       {!props.compact && <div className="mm-hint">滚轮缩放 · 拖拽平移 · 点击站点</div>}
+
+      {/* 客流热力图例（左下角，热力模式显示） */}
+      {!props.compact && props.heatEnabled && (
+        <div className="mm-heat-legend">
+          <span className="mm-heat-legend__title">满载率</span>
+          <span className="mm-heat-legend__item"><i style={{ background: "#3ddc84" }} />舒适 &lt;80</span>
+          <span className="mm-heat-legend__item"><i style={{ background: "#ffd166" }} />一般 80-100</span>
+          <span className="mm-heat-legend__item"><i style={{ background: "#ff9f43" }} />拥挤 100-120</span>
+          <span className="mm-heat-legend__item"><i style={{ background: "#ff4d4f" }} />严重 &gt;120</span>
+        </div>
+      )}
 
       {/* 站点弹窗 */}
       {selected && selectedPos && (
