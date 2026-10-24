@@ -16,8 +16,6 @@ import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
-  MarkLineComponent,
-  MarkPointComponent,
   type GridComponentOption,
   type TooltipComponentOption,
   type LegendComponentOption,
@@ -43,10 +41,8 @@ interface StationTrendData {
 
 export default function StationTrendPanel({
   station,
-  timelineIndex = 0,
 }: {
   station: string | null;
-  timelineIndex?: number;
 }) {
   const [data, setData] = useState<StationTrendData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -120,40 +116,6 @@ export default function StationTrendPanel({
           data: s.actual,
           lineStyle: { width: 2, color: theme.primary },
           itemStyle: { color: theme.primary },
-          markLine: {
-            silent: true,
-            symbol: "none",
-            lineStyle: { color: theme.transferStation, width: 1.5, type: "dashed" },
-            label: {
-              show: true,
-              position: "end",
-              color: theme.transferStation,
-              fontSize: fz(10),
-              formatter: data.xAxis[timelineIndex] ?? "",
-            },
-            data: [{ xAxis: timelineIndex }],
-          },
-          markPoint: {
-            silent: true,
-            symbol: "circle",
-            symbolSize: 9,
-            itemStyle: {
-              color: theme.transferStation,
-              borderColor: "#fff",
-              borderWidth: 1.5,
-              shadowColor: "rgba(255, 209, 102, 0.8)",
-              shadowBlur: 10,
-            },
-            label: {
-              show: true,
-              position: "top",
-              color: theme.transferStation,
-              fontSize: fz(10),
-              fontWeight: 600,
-              formatter: () => `${s.actual[timelineIndex] ?? ""}`,
-            },
-            data: [{ name: "当前时刻", coord: [timelineIndex, s.actual[timelineIndex] ?? 0] }],
-          },
           areaStyle: {
             color: {
               type: "linear",
@@ -167,7 +129,7 @@ export default function StationTrendPanel({
         },
       ],
     };
-  }, [data, station, timelineIndex]);
+  }, [data, station]);
 
   if (!data || !option)
     return (
@@ -202,7 +164,7 @@ export default function StationTrendPanel({
         </span>
       }>
       <Chart<LineOption>
-        use={[LineChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, MarkPointComponent]}
+        use={[LineChart, GridComponent, TooltipComponent, LegendComponent]}
         option={option}
       />
     </PanelCard>

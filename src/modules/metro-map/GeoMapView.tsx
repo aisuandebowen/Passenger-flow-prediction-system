@@ -17,11 +17,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { theme } from "@/config/theme";
-import { FLOW_BY_HOUR, FLOW_PEAK, LOAD_BASE } from "@/config/flow";
+import { FLOW_AVG, FLOW_PEAK, LOAD_BASE } from "@/config/flow";
 import { apply, clampCenter, Fit, panBy, projectLngLat, ViewState, zoomAround } from "./projection";
 import type { Overrides } from "./colors";
 import StationPopup from "./StationPopup";
 import "./MetroMap.css";
+
+/** 全网客流系数（日均/峰值）：脉冲幅度的固定基准 */
+const FLOW_RATIO = FLOW_AVG / FLOW_PEAK;
 
 // ================= 数据结构 =================
 
@@ -140,10 +143,8 @@ export interface GeoMapViewProps {
   heatEnabled?: boolean;
   /** 站点名 -> 满载率（客流热力着色数据，null = 未加载） */
   stationLoad?: Record<string, number> | null;
-  /** 客流脉冲开关（站点圆点/线路随当前时刻客流变化大小） */
+  /** 客流脉冲开关（站点圆点/线路随满载率变化大小） */
   pulseEnabled?: boolean;
-  /** 当前时刻索引（0–17，对应 FLOW_HOURS；用于客流脉冲） */
-  timelineIndex?: number;
 }
 
 export default function GeoMapView(props: GeoMapViewProps) {
@@ -283,20 +284,14 @@ export default function GeoMapView(props: GeoMapViewProps) {
     return own ? lineColor(own) : theme.station;
   };
 
-  // ---- 客流脉冲：站点/线路随当前时刻客流变化大小 ----
-  // 全网分时客流系数（0–1，按峰值归一）
-  const flowRatio = useMemo(() => {
-    const idx = props.timelineIndex ?? 0;
-    return FLOW_BY_HOUR[Math.min(idx, FLOW_BY_HOUR.length - 1)] / FLOW_PEAK;
-  }, [props.timelineIndex]);
-
-  /** 站点脉冲系数：满载率越高、当前时刻客流越大 → 圆点越大（0.45–1.65 区间） */
+  // ---- 客流脉冲：站点/线路大小随满载率变化 ----
+  /** 站点脉冲系数：满载率越高 → 圆点越大（0.45–1.65 区间） */
   const pulseFactor = (s: GeoStation) => {
     if (!props.pulseEnabled) return 1;
     const load = props.stationLoad?.[s.name];
     const loadRatio = load !== undefined ? load / LOAD_BASE : 1;
-    // 客流系数 = 当前时刻全网客流占比 × 站点满载率相对强度
-    const intensity = flowRatio * loadRatio;
+    // 客流系数 = 全网日均客流占比 × 站点满载率相对强度
+    const intensity = FLOW_RATIO * loadRatio;
     return 0.45 + 1.1 * Math.min(intensity, 1.1);
   };
 
@@ -537,7 +532,7 @@ export default function GeoMapView(props: GeoMapViewProps) {
               })
               .join(" ") + (line.loop ? " Z" : "");
           const color = lineColor(line.id);
-          // 线路脉冲系数：该线路平均满载率 × 当前时刻客流
+          // 线路脉冲系数：该线路平均满载率 × 全网日均客流系数
           let linePulse = 1;
           if (props.pulseEnabled && props.stationLoad) {
             const loads = line.stations
@@ -545,7 +540,7 @@ export default function GeoMapView(props: GeoMapViewProps) {
               .filter((v): v is number => v !== undefined);
             if (loads.length) {
               const avg = loads.reduce((a, b) => a + b, 0) / loads.length;
-              linePulse = 0.72 + 0.55 * Math.min((avg / LOAD_BASE) * flowRatio, 1.2);
+              linePulse = 0.72 + 0.55 * Math.min((avg / LOAD_BASE) * FLOW_RATIO, 1.2);
             }
           }
           return (

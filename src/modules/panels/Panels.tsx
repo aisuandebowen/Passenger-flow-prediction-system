@@ -29,11 +29,9 @@ export interface PanelsProps {
   page: PanelPage | null;
   /** 地图当前选中的站点名（趋势面板用） */
   selectedStation: string | null;
-  /** 时间轴当前时刻索引（趋势面板 markLine 高亮用） */
-  timelineIndex: number;
 }
 
-export default function Panels({ page, selectedStation, timelineIndex }: PanelsProps) {
+export default function Panels({ page, selectedStation }: PanelsProps) {
   // 各面板从右侧滑入，错相延迟（模版同款动效）
   const p1 = useMoveTo<HTMLDivElement>({ direction: "toLeft", duration: 0.8, delay: 0.5 });
   const p2 = useMoveTo<HTMLDivElement>({ direction: "toLeft", duration: 0.8, delay: 0.62 });
@@ -64,7 +62,7 @@ export default function Panels({ page, selectedStation, timelineIndex }: PanelsP
             <LineRankPanel />
           </div>
           <div className="panels__item" ref={p2.ref}>
-            <StationTrendPanel station={selectedStation} timelineIndex={timelineIndex} />
+            <StationTrendPanel station={selectedStation} />
           </div>
           <div className="panels__item" ref={p3.ref}>
             <AlarmListPanel />
