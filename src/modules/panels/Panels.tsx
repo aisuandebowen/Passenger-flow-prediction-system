@@ -35,9 +35,11 @@ export interface PanelsProps {
   selectedStation: string | null;
   /** 面板侧发起的选中站变化（榜单/详情点击 → 联动地图与其他面板） */
   onSelectStation?: (name: string | null) => void;
+  /** 当前地图城市（车站详情面板按城市加载线网信息） */
+  cityId?: string;
 }
 
-export default function Panels({ page, selectedStation, onSelectStation }: PanelsProps) {
+export default function Panels({ page, selectedStation, onSelectStation, cityId }: PanelsProps) {
   // 各面板从右侧滑入，错相延迟（模版同款动效）
   const p1 = useMoveTo<HTMLDivElement>({ direction: "toLeft", duration: 0.8, delay: 0.5 });
   const p2 = useMoveTo<HTMLDivElement>({ direction: "toLeft", duration: 0.8, delay: 0.62 });
@@ -58,7 +60,7 @@ export default function Panels({ page, selectedStation, onSelectStation }: Panel
       {isStationManage ? (
         <>
           <div className="panels__item panels__item--compact" ref={p1.ref} style={{ flex: 1.35 }}>
-            <StationDetailPanel station={selectedStation} />
+            <StationDetailPanel station={selectedStation} cityId={cityId} />
           </div>
           <div className="panels__item panels__item--compact" ref={p2.ref} style={{ flex: 1.0 }}>
             <StationRankPanel

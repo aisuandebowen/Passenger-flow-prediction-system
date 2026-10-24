@@ -1,10 +1,14 @@
 /**
  * 面板 —— 车站实时详情（车站管理页，联动地图/榜单选中站）
  *
- * 数据：data/station-detail.json，经 loadData('stationDetail') 读取。
+ * 数据：
+ *   - data/station-detail.json（loadData('stationDetail')）：重点站精修指标；
+ *   - 点到未收录的车站时，按地图线网数据（线路徽章/换乘标记）+ 站点满载率
+ *     （data/station-load.json）推算一套演示指标，保证任意车站都能联动展示，
+ *     接入后端 API 后由真实数据覆盖（推算值会在面板上标注「推算指标」）。
  *
  * 交互：由父组件传入当前选中站（地图点击 / 拥挤榜点击 / 排行榜点击均会同步到这里）；
- *   数据里没有该站时回退 defaultStation。
+ *   站名既不在精修数据也不在当前城市线网里时，回退 defaultStation。
  *
  * 内容：站名 + 途经线路徽章 + 拥挤状态（图标+文字+颜色）、进/出/换乘量与
  *   站台满载率四指标、06–23 进出站分时双曲线、首末班车与限流提示。
@@ -14,6 +18,7 @@ import { useEffect, useMemo, useState } from "react";
 import PanelCard from "@/components/PanelCard";
 import { loadData } from "@/config/data-source";
 import { theme } from "@/config/theme";
+import type { CityGeoData } from "@/modules/metro-map/GeoMapView";
 import "./StationDetailPanel.css";
 
 interface StationLineInfo {
@@ -50,11 +55,65 @@ const STATUS: Record<
   crowd: { label: "拥挤", color: "#ea580c", icon: "danger" },
 };
 
+/** 06:00–23:00 分时刻度（18 点，与曲线对齐） */
+const HOURS = [
+  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
+  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
+  "20:00", "21:00", "22:00", "23:00",
+];
+
 /** 满载率分级配色（与地图客流热力口径一致：90 拥挤 / 120 严重拥挤） */
 function loadColor(load: number): string {
   if (load >= 120) return "#ea580c";
   if (load >= 90) return "#ffa800";
   return "#4ade80";
+}
+
+/** 站名 → 稳定散列（同一站每次推算结果一致，切换往返不跳变） */
+function hashName(name: string): number {
+  let h = 7;
+  for (const ch of name) h = (h * 31 + (ch.codePointAt(0) ?? 0)) % 100000;
+  return h;
+}
+
+/**
+ * 未收录车站的演示推算：线路徽章/换乘标记来自线网真实数据，
+ * 满载率优先取 station-load.json 实测值，其余量按满载率+站名散列派生。
+ */
+function synthesizeDetail(
+  name: string,
+  geo: { lines: string[]; transfer: boolean },
+  city: CityGeoData,
+  stationLoad: Record<string, number> | null
+): StationDetail {
+  const h = hashName(name);
+  const load = stationLoad?.[name] ?? 35 + (h % 105);
+  const lines = geo.lines
+    .map((id) => city.lines.find((l) => l.id === id))
+    .filter((l): l is (typeof city.lines)[number] => !!l)
+    .map((l) => ({ id: l.id, name: l.name.replace(/号线.*$/, "号线"), color: l.color }));
+  const scale = load / 100;
+  const inflow = Math.round((5200 + (h % 4000)) * scale);
+  const outflow = Math.round(inflow * (0.82 + ((h >> 3) % 30) / 100));
+  const transfer = geo.transfer ? Math.round(inflow * (0.75 + ((h >> 6) % 45) / 100)) : 0;
+  // 分时形态：双峰模板，按散列偏早高峰/偏晚高峰
+  const shape = [0.16, 0.27, 0.5, 0.78, 0.92, 0.8, 0.66, 0.7, 0.84, 0.95, 0.82, 0.72, 0.64, 0.76, 0.58, 0.42, 0.3, 0.22];
+  const early = h % 3 === 0;
+  const shaped = shape.map((v, i) => (early ? (i < 9 ? v * 1.1 : v * 0.9) : i >= 9 ? v * 1.1 : v * 0.9));
+  const mx = Math.max(...shaped, 0.001);
+  return {
+    lines,
+    status: load >= 120 ? "crowd" : load >= 90 ? "warn" : "ok",
+    metrics: { inflow, outflow, transfer, load },
+    hours: HOURS,
+    hourly: {
+      in: shaped.map((v) => Math.round((inflow * v) / mx)),
+      out: shaped.map((v) => Math.round((outflow * v) / mx)),
+    },
+    firstTrain: `05:${String(2 + (h % 25)).padStart(2, "0")}`,
+    lastTrain: `23:${String(5 + (h % 30)).padStart(2, "0")}`,
+    notice: null,
+  };
 }
 
 function StatusIcon({ kind }: { kind: "check" | "warn" | "danger" }) {
@@ -83,12 +142,17 @@ function StatusIcon({ kind }: { kind: "check" | "warn" | "danger" }) {
 
 export default function StationDetailPanel({
   station,
+  cityId = "beijing",
 }: {
   /** 当前选中站名（null = 用默认站） */
   station: string | null;
+  /** 当前地图城市（取线网真实线路信息用） */
+  cityId?: string;
 }) {
   const [data, setData] = useState<StationDetailData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [city, setCity] = useState<CityGeoData | null>(null);
+  const [stationLoad, setStationLoad] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
     loadData<StationDetailData>("stationDetail")
@@ -96,17 +160,38 @@ export default function StationDetailPanel({
       .catch((e: Error) => setError(e.message));
   }, []);
 
-  // 选中站在数据里则用它，否则回退默认站
-  const key = useMemo(
-    () =>
-      data
-        ? station && data.stations[station]
-          ? station
-          : data.defaultStation
-        : null,
-    [data, station]
-  );
-  const d = key ? data?.stations[key] : undefined;
+  // 按当前城市加载线网（线路徽章/换乘标记），失败不影响精修站展示
+  useEffect(() => {
+    let alive = true;
+    setCity(null);
+    loadData<CityGeoData>("metroCity", { city: cityId })
+      .then((d) => alive && setCity(d))
+      .catch(() => alive && setCity(null));
+    loadData<Record<string, number>>("stationLoad")
+      .then((d) => alive && setStationLoad(d))
+      .catch(() => alive && setStationLoad(null));
+    return () => {
+      alive = false;
+    };
+  }, [cityId]);
+
+  // 解析要展示的站：精修数据优先；其次按线网推算（点任意地图车站都可联动）；最后回退默认站
+  const resolved = useMemo<{
+    key: string;
+    d: StationDetail;
+    estimated: boolean;
+  } | null>(() => {
+    if (!data) return null;
+    if (station && data.stations[station])
+      return { key: station, d: data.stations[station], estimated: false };
+    const geo = city?.stations.find((s) => s.name === station);
+    if (station && city && geo)
+      return { key: station, d: synthesizeDetail(station, geo, city, stationLoad), estimated: true };
+    const fallback = data.stations[data.defaultStation];
+    return fallback ? { key: data.defaultStation, d: fallback, estimated: false } : null;
+  }, [data, station, city, stationLoad]);
+
+  const d = resolved?.d;
 
   // 分时双曲线 SVG path（进站/出站共用一个归一化上限）
   const chart = useMemo(() => {
@@ -144,7 +229,7 @@ export default function StationDetailPanel({
       </PanelCard>
     );
 
-  if (!data || !d || !chart || !key)
+  if (!data || !resolved || !d || !chart)
     return (
       <PanelCard title="车站实时详情">
         <div className="panel-loading">加载中…</div>
@@ -157,7 +242,7 @@ export default function StationDetailPanel({
   return (
     <PanelCard title={data.title}>
       <div className="sdp-top">
-        <span className="sdp-name">{key}</span>
+        <span className="sdp-name">{resolved.key}</span>
         {d.lines.map((l) => (
           <span key={l.id} className="sdp-badge" style={{ background: l.color }}>
             {l.name}
@@ -193,7 +278,7 @@ export default function StationDetailPanel({
         viewBox="0 0 384 62"
         preserveAspectRatio="none"
         role="img"
-        aria-label={`${key} 分时进出站客流曲线`}>
+        aria-label={`${resolved.key} 分时进出站客流曲线`}>
         <path d="M0,20 H384 M0,41 H384" stroke="rgba(120,158,255,0.14)" strokeWidth="1" strokeDasharray="3 4" />
         <path d={chart.outArea} fill="rgba(48, 97, 219, 0.18)" />
         <path d={chart.outPath} fill="none" stroke={theme.primary} strokeWidth="2" vectorEffect="non-scaling-stroke" />
@@ -222,9 +307,15 @@ export default function StationDetailPanel({
         <span>
           末班 <b>{d.lastTrain}</b>
         </span>
-        <span className={d.notice ? "sdp-notice" : undefined}>
-          {d.notice ?? "无限流措施"}
-        </span>
+        {resolved.estimated ? (
+          <span className="sdp-estimated" title="该站未接入实时数据，指标按线网与满载率推算">
+            推算指标
+          </span>
+        ) : (
+          <span className={d.notice ? "sdp-notice" : undefined}>
+            {d.notice ?? "无限流措施"}
+          </span>
+        )}
       </div>
     </PanelCard>
   );

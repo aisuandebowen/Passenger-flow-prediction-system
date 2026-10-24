@@ -40,6 +40,7 @@ export default function MetroMap({
   activeLine,
   onActiveLineChange,
   selectedStation,
+  onCityChange,
 }: {
   /** 是否绘制 OD 流量光线（由外部页面状态控制） */
   odEnabled?: boolean;
@@ -57,6 +58,8 @@ export default function MetroMap({
   onActiveLineChange?: (lineId: string | null) => void;
   /** 受控：外部指定的选中站（面板榜单点击联动），同步到地图高亮 */
   selectedStation?: string | null;
+  /** 城市切换回调（外部同步状态，供车站详情等面板按城市取线网信息） */
+  onCityChange?: (cityId: "beijing" | "qingdao") => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(containerRef);
@@ -117,6 +120,11 @@ export default function MetroMap({
   useEffect(() => {
     if (selectedStation !== undefined) setSelection(selectedStation);
   }, [selectedStation]);
+
+  // 城市切换同步给外部（车站详情面板按城市加载线网信息）
+  useEffect(() => {
+    onCityChange?.(cityId);
+  }, [cityId, onCityChange]);
 
   // 外部是否显式控制 OD 开关；未传则回退到 mapConfig
   const odOn = odEnabled ?? mapConfig.od.enabled;

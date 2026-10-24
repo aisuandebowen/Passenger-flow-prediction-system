@@ -32,6 +32,7 @@ import ScenePage from "@/modules/scene/ScenePage";
 import { loadData } from "@/config/data-source";
 import type { SceneMenusData } from "@/modules/scene/types";
 import { layout } from "@/config/layout";
+import { mapConfig } from "@/config/map";
 import { useAutoFit } from "@/utils/autofit";
 import "./App.css";
 
@@ -51,6 +52,8 @@ export default function App() {
   });
   // 侧边栏折叠状态（提升到这里，联动地图/满载率布局）
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // 当前地图城市（与 MetroMap 双向同步：车站详情面板按城市取线网信息）
+  const [cityId, setCityId] = useState<string>(mapConfig.city);
 
   // 场景菜单（节假日/大型活动）——用于判断选中菜单是否为场景页
   const [sceneIds, setSceneIds] = useState<Set<string>>(new Set());
@@ -148,6 +151,7 @@ export default function App() {
                   activeLine={activeLine}
                   onActiveLineChange={setActiveLine}
                   selectedStation={selectedStation}
+                  onCityChange={setCityId}
                 />
                 {/* 顶部 KPI 总览横幅（悬浮于地图上方，随线路联动）：线路状态页=线网指标，车站管理页=车站指标 */}
                 {page === "line-status" && <LineStatusKpi activeLine={activeLine} />}
@@ -159,6 +163,7 @@ export default function App() {
                 page={page}
                 selectedStation={selectedStation}
                 onSelectStation={handleSelectStation}
+                cityId={cityId}
               />
             </>
           )}

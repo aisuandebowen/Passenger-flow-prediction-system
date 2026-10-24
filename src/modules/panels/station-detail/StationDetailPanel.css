@@ -125,5 +125,15 @@
 
 .sdp-notice {
   margin-left: auto;
-  color: var(--dv-accent, #ffd166);
+  color: var(--dv-transfer, #ffd166);
+}
+
+/* 未接入实测数据的车站：提示指标为推算值 */
+.sdp-estimated {
+  margin-left: auto;
+  color: var(--dv-sub);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  padding: 0.1em 0.5em;
+  white-space: nowrap;
 }
