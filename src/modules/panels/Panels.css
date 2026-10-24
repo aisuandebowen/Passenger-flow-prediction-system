@@ -15,3 +15,8 @@
   flex: 1 1 0;
   min-height: 0;
 }
+
+/* 车站管理页四面板布局：面板内容更紧凑（内边距收紧，多塞一个面板） */
+.panels__item--compact .panel-card__content {
+  padding: 10px 16px 12px;
+}

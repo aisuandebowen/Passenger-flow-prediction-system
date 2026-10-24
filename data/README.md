@@ -68,14 +68,9 @@
   "data": [ { "name": "1号线", "value": 145 }, ... ] }   // 按value降序排，图表直接按数组顺序画
 ```
 
-### panel2-transfer-radar.json — 换乘站客流压力（雷达图）
+### panel2-transfer-radar.json — 换乘站客流压力（旧版，已由 transfer-pressure.json 取代）
 
-```jsonc
-{ "title": "换乘站客流压力",
-  "indicators": [ { "name": "西直门", "max": 100 }, ... ],   // 雷达轴（站名+最大值）
-  "current": [ 86, 92, ... ],   // 当前值，顺序与 indicators 对齐
-  "peak":    [ 95, 98, ... ] }  // 早高峰峰值
-```
+旧版"多站同图"雷达数据，当前雷达面板已改用 `transfer-pressure.json`（见下方车站管理段）。文件保留仅作兼容。
 
 ### panel3-alarms.json — 实时告警（无缝滚动列表）
 
@@ -98,6 +93,86 @@
 ### panel4-trend.json — 全网客流趋势（预留）
 
 24 小时分时客流（进站/出站），预留给后续的趋势面板使用。
+
+## 车站管理页（station-manage）数据
+
+车站管理页的 4 个数据文件。`network` 与 `lines.*` 同构，后端可各自独立出接口；
+线路筛选选中某线路时前端取 `lines[线路id]`，取不到自动回退 `network`。
+线路 id 与 `metro-cities/<城市>.json` 的 `lines[].id` 一致（如 M1 / M10 / CP）。
+
+### station-kpi.json — 车站运行总览 KPI（顶部横幅）
+
+```jsonc
+{ "title": "车站运行总览",
+  "network": {                              // 全网口径；lines 里每条线路同构
+    "name": "全网",                         // 选中线路时横幅左侧显示该名称
+    "stations": 406,                        // 车站总数（座）
+    "transferStations": 104,                // 换乘站数
+    "inflow": 86.4, "inflowUnit": "万人次/h", "inflowDelta": 5.2,   // 实时进站量 + 环比昨日%
+    "crowdTotal": 12, "crowdSevere": 3, "crowded": 9,               // 拥挤车站：总数/严重/一般
+    "limitTotal": 5, "limitLevelA": 2, "limitLevelB": 3,            // 限流车站：总数/A级/B级
+    "deviceOnlineRate": 99.2,               // 车站设备在线率（%）
+    "gateOnline": 2846, "escalatorFaults": 3                        // 闸机在线台数 / 扶梯故障数
+  },
+  "lines": { "M1": { ...同 network... }, "M10": { ... } } }
+```
+
+### station-detail.json — 车站实时详情（联动地图/榜单选中站）
+
+`stations` 的 key 是站名，需与地图数据（`metro-cities/*.json`）站名一致才能联动高亮；
+点到的站不在数据里时回退 `defaultStation`。面板只随全局选中站切换，无独立切换控件。
+
+```jsonc
+{ "title": "车站实时详情", "defaultStation": "国贸",
+  "stations": {
+    "国贸": {
+      "lines": [ { "id": "M1", "name": "1号线", "color": "#C33831" } ],  // 途经线路徽章（自包含，颜色随文件下发）
+      "status": "crowd",                    // 拥挤状态: ok(舒适) / warn(一般) / crowd(拥挤)
+      "metrics": {
+        "inflow": 18246, "outflow": 16933,  // 进/出站量（人次，实时）
+        "transfer": 9512,                   // 换乘量（非换乘站传 0，面板显示 "—"）
+        "load": 128                         // 站台满载率（%）：>=90 黄 / >=120 红 / 其余绿
+      },
+      "hours": ["06:00", ..., "23:00"],     // 分时刻度（18 点，与曲线对齐）
+      "hourly": {
+        "in":  [3400, 6100, ...],           // 进站分时曲线，长度与 hours 一致
+        "out": [3100, 5400, ...]
+      },
+      "firstTrain": "05:19", "lastTrain": "23:15",
+      "notice": "A口 限流中"                // 限流/管控提示，null 则显示"无限流措施"
+    }
+  } }
+```
+
+### station-alerts.json — 拥挤·限流车站处置榜
+
+按严重程度排序（前端按数组顺序渲染，一般后端按满载率降序下发）。
+
+```jsonc
+{ "title": "拥挤 · 限流车站", "updated": "08:30",
+  "list": [
+    { "station": "天通苑",                          // 站名（与地图站名一致可点击联动）
+      "lines": [ { "id": "M5", "name": "5号线", "color": "#A4217F" } ],  // 途经线路色点
+      "load": 132,                                  // 满载率（%），进度条 140% 封顶
+      "level": "severe",                            // 级别: severe(严重拥挤/红) / crowded(拥挤/黄) / limit(限流/金)
+      "status": "严重拥挤",                          // 状态文字（数据下发直接展示）
+      "action": "加开临客 2 列" }                    // 处置措施
+  ] }
+```
+
+### transfer-pressure.json — 换乘站客流压力（对比条形图，可切换换乘站）
+
+每个换乘站 8 个压力维度，图表为「当前 vs 早高峰峰值」横向对比条形图：`axes` 是 8 个压力维度，
+`stations` 的 key 为换乘站名（在地图上点选该站时雷达自动跟随切换）。
+
+```jsonc
+{ "title": "换乘站客流压力", "defaultStation": "西直门",
+  "axes": ["进站量", "换乘量", "站台密度", "通道流", "安检排队", "扶梯负载", "票务压力", "出站量"],
+  "max": 100,                               // 各维度归一上限
+  "stations": {
+    "西直门": { "current": [78, 92, ...], "peak": [95, 100, ...] }   // 长度与 axes 对齐
+  } }
+```
 
 ## 切换成 API
 

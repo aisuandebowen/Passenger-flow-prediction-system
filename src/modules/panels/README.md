@@ -8,8 +8,9 @@ panels/
 ├── Panels.css
 ├── panel1/                   # 小面板 1：线路客运量排行（横向条形图）
 │   └── LineRankPanel.tsx
-├── panel2/                   # 小面板 2：换乘站客流压力（雷达图）
-│   └── TransferRadarPanel.tsx
+├── panel2/                   # 小面板 2：换乘站客流压力（当前 vs 峰值对比条形图）
+│   ├── TransferPressurePanel.tsx
+│   └── TransferPressurePanel.css
 ├── panel3/                   # 小面板 3：实时告警（无缝滚动列表）
 │   ├── AlarmListPanel.tsx
 │   └── AlarmListPanel.css
@@ -87,7 +88,7 @@ width: 420, top: 96, right: 16, bottom: 24, gap: 18,
 | 面板 | 内容 | 数据 | 图表技术 |
 |---|---|---|---|
 | panel1 | 线路客运量排行（含今日累计数字滚动） | `panel1-line-rank.json` | ECharts 横向条形图 |
-| panel2 | 换乘站客流压力（当前 vs 早高峰） | `panel2-transfer-radar.json` | ECharts 雷达图 |
+| panel2 | 换乘站客流压力（当前 vs 早高峰，可切换换乘站） | `transfer-pressure.json` | ECharts 横向对比条形图 |
 | panel3 | 实时告警（悬停暂停的无缝滚动表） | `panel3-alarms.json` | 自研虚拟滚动 |
 
 ### panel3 无缝滚动说明

@@ -1,0 +1,55 @@
+{
+  "title": "拥挤 · 限流车站",
+  "updated": "08:30",
+  "list": [
+    {
+      "station": "天通苑",
+      "lines": [{ "id": "M5", "name": "5号线", "color": "#A4217F" }],
+      "load": 132,
+      "level": "severe",
+      "status": "严重拥挤",
+      "action": "加开临客 2 列"
+    },
+    {
+      "station": "西二旗",
+      "lines": [
+        { "id": "M13", "name": "13号线", "color": "#F8E600" },
+        { "id": "CP", "name": "昌平线", "color": "#E082B6" }
+      ],
+      "load": 127,
+      "level": "severe",
+      "status": "严重拥挤",
+      "action": "B 级限流 · 分批放行"
+    },
+    {
+      "station": "国贸",
+      "lines": [
+        { "id": "M1", "name": "1号线", "color": "#C33831" },
+        { "id": "M10", "name": "10号线", "color": "#009AC0" }
+      ],
+      "load": 121,
+      "level": "crowded",
+      "status": "拥挤",
+      "action": "加强站台引导"
+    },
+    {
+      "station": "大望路",
+      "lines": [
+        { "id": "M1", "name": "1号线", "color": "#C33831" },
+        { "id": "M14", "name": "14号线", "color": "#D4A7A2" }
+      ],
+      "load": 115,
+      "level": "crowded",
+      "status": "拥挤",
+      "action": "换乘通道分流"
+    },
+    {
+      "station": "天安门西",
+      "lines": [{ "id": "M1", "name": "1号线", "color": "#C33831" }],
+      "load": 71,
+      "level": "limit",
+      "status": "A口限流",
+      "action": "安检双通道开启"
+    }
+  ]
+}

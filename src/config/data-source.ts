@@ -36,6 +36,10 @@ export const LOCAL_PATHS = {
   sceneDetail: "./data/scene-detail.json",
   lineStatusKpi: "./data/line-status-kpi-lines.json",
   stationLoad: "./data/station-load.json",
+  stationKpi: "./data/station-kpi.json",
+  stationDetail: "./data/station-detail.json",
+  stationAlerts: "./data/station-alerts.json",
+  transferPressure: "./data/transfer-pressure.json",
 } as const;
 
 /** API 接口地址（DATA_MODE='api' 时生效） */
@@ -53,6 +57,10 @@ export const API_ENDPOINTS = {
   sceneDetail: "/api/scene/detail",
   lineStatusKpi: "/api/line-status/kpi",
   stationLoad: "/api/line-status/station-load",
+  stationKpi: "/api/station-manage/kpi",
+  stationDetail: "/api/station-manage/station-detail",
+  stationAlerts: "/api/station-manage/alerts",
+  transferPressure: "/api/station-manage/transfer-pressure",
 } as const;
 
 /** 数据源的 key，各模块用这个名字取数据 */

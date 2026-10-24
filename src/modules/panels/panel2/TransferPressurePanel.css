@@ -1,0 +1,29 @@
+/* 小面板 2：换乘站切换 chips */
+
+.trp-chips {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.trp-chip {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.45em;
+  font-size: 0.52em;
+  letter-spacing: 0;
+  color: var(--dv-text, #bdcfff);
+  border: 1px solid rgba(120, 158, 255, 0.4);
+  border-radius: 3px;
+  background: rgba(48, 97, 219, 0.12);
+}
+
+.trp-chip:hover {
+  background: rgba(48, 97, 219, 0.32);
+}
+
+.trp-chip.is-active {
+  color: #02101f;
+  font-weight: 600;
+  background: var(--dv-accent, #789eff);
+  border-color: var(--dv-accent, #789eff);
+}

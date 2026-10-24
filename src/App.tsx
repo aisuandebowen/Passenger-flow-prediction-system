@@ -27,6 +27,7 @@ import MetroMap from "@/modules/metro-map/MetroMap";
 import Panels, { type PanelPage } from "@/modules/panels/Panels";
 import LineLoadPanel from "@/modules/panels/panel6/LineLoadPanel";
 import LineStatusKpi from "@/modules/panels/LineStatusKpi";
+import StationKpi from "@/modules/panels/StationKpi";
 import ScenePage from "@/modules/scene/ScenePage";
 import { loadData } from "@/config/data-source";
 import type { SceneMenusData } from "@/modules/scene/types";
@@ -146,13 +147,19 @@ export default function App() {
                   onSelectStation={handleSelectStation}
                   activeLine={activeLine}
                   onActiveLineChange={setActiveLine}
+                  selectedStation={selectedStation}
                 />
-                {/* 线路状态页顶部 KPI 总览横幅（悬浮于地图上方，随线路联动；车站管理页不展示） */}
+                {/* 顶部 KPI 总览横幅（悬浮于地图上方，随线路联动）：线路状态页=线网指标，车站管理页=车站指标 */}
                 {page === "line-status" && <LineStatusKpi activeLine={activeLine} />}
+                {page === "station-manage" && <StationKpi activeLine={activeLine} />}
               </div>
 
               {/* 右栏：面板 */}
-              <Panels page={page} selectedStation={selectedStation} />
+              <Panels
+                page={page}
+                selectedStation={selectedStation}
+                onSelectStation={handleSelectStation}
+              />
             </>
           )}
         </div>

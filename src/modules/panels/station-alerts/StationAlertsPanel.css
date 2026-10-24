@@ -1,0 +1,132 @@
+/* 面板 —— 拥挤 · 限流车站处置榜 */
+
+.sal-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sal-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  line-height: 1.15; /* 必须在 font 之后：font 简写会重置行高 */
+  padding: 0.06em 0.2em 0.08em;
+  /* 行是原生 button：重置 UA 默认白底/边框，融入深色面板 */
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(120, 158, 255, 0.16);
+  border-radius: 0;
+  appearance: none;
+}
+
+button.sal-row {
+  cursor: pointer;
+}
+
+.sal-row:last-child {
+  border-bottom: none;
+}
+
+.sal-row:hover {
+  background: rgba(48, 97, 219, 0.2);
+}
+
+.sal-row.is-selected {
+  background: rgba(48, 97, 219, 0.3);
+  box-shadow: inset 2px 0 0 var(--dv-accent, #789eff);
+}
+
+.sal-line1 {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  min-width: 0;
+}
+
+.sal-ico {
+  flex: none;
+  display: inline-flex;
+}
+
+.sal-name {
+  font-size: 0.6em;
+  color: var(--dv-title, #e8efff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sal-lb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  font-size: 0.48em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+}
+
+.sal-lb i {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 1px;
+}
+
+.sal-status {
+  margin-left: auto;
+  flex: none;
+  font-size: 0.54em;
+  white-space: nowrap;
+}
+
+.sal-line2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.08em;
+}
+
+.sal-bar {
+  flex: 0 0 40%;
+  height: 4px;
+  background: rgba(48, 97, 219, 0.18);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.sal-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.sal-line2 b {
+  flex: none;
+  font-size: 0.52em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sal-action {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.5em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.sal-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  height: 100%;
+  min-height: 3em;
+  font-size: 0.66em;
+  color: #4ade80;
+}

@@ -39,6 +39,7 @@ export default function MetroMap({
   compact = false,
   activeLine,
   onActiveLineChange,
+  selectedStation,
 }: {
   /** 是否绘制 OD 流量光线（由外部页面状态控制） */
   odEnabled?: boolean;
@@ -54,6 +55,8 @@ export default function MetroMap({
   activeLine?: string | null;
   /** 线路选中变化回调（点击 chips 时触发，外部同步状态） */
   onActiveLineChange?: (lineId: string | null) => void;
+  /** 受控：外部指定的选中站（面板榜单点击联动），同步到地图高亮 */
+  selectedStation?: string | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(containerRef);
@@ -109,6 +112,11 @@ export default function MetroMap({
     window.addEventListener("pointerdown", onDown);
     return () => window.removeEventListener("pointerdown", onDown);
   }, [filterOpen]);
+
+  // 外部指定选中站（面板榜单/详情点击）→ 同步地图高亮
+  useEffect(() => {
+    if (selectedStation !== undefined) setSelection(selectedStation);
+  }, [selectedStation]);
 
   // 外部是否显式控制 OD 开关；未传则回退到 mapConfig
   const odOn = odEnabled ?? mapConfig.od.enabled;

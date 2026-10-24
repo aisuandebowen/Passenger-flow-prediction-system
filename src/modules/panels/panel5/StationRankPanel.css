@@ -1,33 +1,135 @@
-/* 面板 5：车站客运量排行 —— 时间段切换按钮 */
+/* 面板 5：车站客运量排行 —— 横向条形行 + 时段下拉 */
 
-.sr-period-switch {
+.sr-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 时段下拉选择（替代原 17 个时段 chips：数量太多已溢出标题栏） */
+
+.sr-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sr-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: translateY(-30%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--dv-accent, #789eff);
+  pointer-events: none;
+}
+
+.sr-select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 24px;
+  min-width: 96px;
+  max-width: 150px;
+  padding: 0 20px 0 8px;
+  font: inherit;
+  font-size: 0.52em;
+  letter-spacing: 0;
+  color: var(--dv-text, #bdcfff);
+  background: rgba(48, 97, 219, 0.18);
+  border: 1px solid rgba(120, 158, 255, 0.4);
+  border-radius: 3px;
+  color-scheme: dark; /* 原生下拉弹层也按深色渲染 */
+  cursor: pointer;
+}
+
+.sr-select:hover {
+  background: rgba(48, 97, 219, 0.32);
+}
+
+.sr-select:focus-visible {
+  outline: 2px solid var(--dv-accent, #789eff);
+  outline-offset: 1px;
+}
+
+.sr-row {
   display: flex;
   align-items: center;
-  gap: 3px;
-  max-width: 100%;
+  gap: 0.4em;
+  width: 100%;
+  min-height: 20px; /* 可点条目的最小命中区 */
+  font: inherit;
+  color: inherit;
+  line-height: 1.2; /* 必须在 font 之后：font 简写会重置行高 */
+  text-align: left;
+  padding: 0.02em 0.15em;
+  /* 行是原生 button：重置 UA 默认白底/边框，融入深色面板 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  appearance: none;
+}
+
+button.sr-row {
+  cursor: pointer;
+}
+
+.sr-row:hover {
+  background: rgba(48, 97, 219, 0.2);
+}
+
+.sr-row.is-selected {
+  background: rgba(48, 97, 219, 0.3);
+  box-shadow: inset 2px 0 0 var(--dv-accent, #789eff);
+}
+
+.sr-rank {
+  flex: none;
+  width: 1.4em;
+  font-size: 0.56em;
+  color: var(--dv-sub);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.sr-rank.is-top {
+  color: var(--dv-transfer, #ffd166);
+  font-weight: 600;
+}
+
+.sr-name {
+  flex: none;
+  width: 3.4em;
+  font-size: 0.6em;
+  color: var(--dv-text, #bdcfff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-bar {
+  flex: 1;
+  min-width: 0;
+  height: 0.36em;
+  background: rgba(48, 97, 219, 0.16);
+  border-radius: 2px;
   overflow: hidden;
 }
 
-.sr-period-chip {
-  flex: 0 0 auto;
-  padding: 1px 5px;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  background: transparent;
-  color: var(--dv-sub);
-  font-size: 0.625em;
-  line-height: 1.5;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+.sr-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(48, 97, 219, 0.25), var(--dv-primary, #3061db));
 }
 
-.sr-period-chip:hover {
-  color: var(--dv-title);
-  border-color: var(--dv-panel-border);
-}
-
-.sr-period-chip.is-active {
-  background: rgba(48, 97, 219, 0.32);
-  color: var(--dv-title);
-  border-color: var(--dv-accent);
+.sr-value {
+  flex: none;
+  width: 3.4em;
+  font-size: 0.56em;
+  color: var(--dv-title, #e8efff);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
