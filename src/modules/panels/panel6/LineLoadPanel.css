@@ -125,8 +125,50 @@
 }
 
 .ll-col-head span {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ---- 列头排序按钮（升/降序，独立于每条线路） ---- */
+.ll-sort {
+  flex: none;
+  display: inline-flex;
+  gap: 3px;
+  margin-left: auto;
+}
+
+.ll-sort button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font: inherit;
+  color: var(--dv-sub);
+  border: 1px solid rgba(120, 158, 255, 0.35);
+  border-radius: 3px;
+  background: rgba(48, 97, 219, 0.12);
+  cursor: pointer;
+}
+
+.ll-sort button:hover {
+  color: var(--dv-title);
+  background: rgba(48, 97, 219, 0.32);
+}
+
+.ll-sort button:focus-visible {
+  outline: 2px solid var(--dv-accent);
+  outline-offset: 1px;
+}
+
+.ll-sort button.is-active {
+  color: #02101f;
+  font-weight: 600;
+  background: var(--dv-accent);
+  border-color: var(--dv-accent);
 }
 
 .ll-col-body {

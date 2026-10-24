@@ -5,6 +5,9 @@
  * 全宽模式下所有线路并列（每条线一列），列头为线路名，横向滚动浏览全部线路。
  * 任何线路、任何站数都能放下。
  *
+ * 排序：每条线路列头右侧一组 ▲/▼ 按钮，按满载率升/降序独立排序；
+ *   再点一次当前激活方向即恢复原始站序。
+ *
  * 颜色阈值（可改）：
  *   load < 80   → 绿（宽松）
  *   80 ≤ load ≤ 100 → 黄（接近饱和）
@@ -48,9 +51,18 @@ function loadColor(load: number): string {
   return GREEN;
 }
 
+/** 单列排序方向（undefined = 原始站序） */
+type SortDir = "asc" | "desc";
+
 export default function LineLoadPanel() {
   const [data, setData] = useState<LineLoadData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 每条线路独立的排序方向（key = 线路 id）
+  const [sorts, setSorts] = useState<Record<string, SortDir | undefined>>({});
+
+  // 点击同向按钮 = 取消排序恢复站序；异向按钮 = 切换方向
+  const toggleSort = (lineId: string, dir: SortDir) =>
+    setSorts((prev) => ({ ...prev, [lineId]: prev[lineId] === dir ? undefined : dir }));
 
   useEffect(() => {
     loadData<LineLoadData>("lineLoad")
@@ -116,41 +128,72 @@ export default function LineLoadPanel() {
       {/* 所有线路并列：横向滚动 */}
       <div className="ll-scroll">
         <div className="ll-columns">
-          {data.lines.map((l) => (
-            <div className="ll-col" key={l.id}>
-              <div className="ll-col-head" style={{ borderColor: l.color }}>
-                <i className="ll-col-line" style={{ background: l.color }} />
-                <span>{l.name}</span>
-              </div>
-              <div className="ll-col-body">
-                {l.stations.map((s) => {
-                  const color = loadColor(s.load);
-                  const pct = Math.min(100, s.load);
-                  return (
-                    <div className="ll-row" key={s.name}>
-                      <span className="ll-station">
-                        {s.name}
-                        <i className="ll-tip">{s.name}</i>
-                      </span>
-                      <div className="ll-bar-track">
-                        <div
-                          className="ll-bar"
-                          style={{
-                            width: `${pct}%`,
-                            background: `linear-gradient(90deg, ${color}44, ${color})`,
-                          }}
-                        />
-                        <i className="ll-bar-mark" />
+          {data.lines.map((l) => {
+            const dir = sorts[l.id];
+            // 排序在副本上进行；stable sort 保证同满载率时保持原站序
+            const stations = dir
+              ? [...l.stations].sort((a, b) => (dir === "desc" ? b.load - a.load : a.load - b.load))
+              : l.stations;
+            return (
+              <div className="ll-col" key={l.id}>
+                <div className="ll-col-head" style={{ borderColor: l.color }}>
+                  <i className="ll-col-line" style={{ background: l.color }} />
+                  <span>{l.name}</span>
+                  <span className="ll-sort">
+                    <button
+                      type="button"
+                      className={dir === "asc" ? "is-active" : ""}
+                      aria-pressed={dir === "asc"}
+                      aria-label={`${l.name}按满载率升序`}
+                      title="按满载率升序（再点恢复站序）"
+                      onClick={() => toggleSort(l.id, "asc")}>
+                      <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
+                        <path d="M4 1 7 6.4H1Z" fill="currentColor" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className={dir === "desc" ? "is-active" : ""}
+                      aria-pressed={dir === "desc"}
+                      aria-label={`${l.name}按满载率降序`}
+                      title="按满载率降序（再点恢复站序）"
+                      onClick={() => toggleSort(l.id, "desc")}>
+                      <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
+                        <path d="M4 7 1 1.6h6Z" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+                <div className="ll-col-body">
+                  {stations.map((s) => {
+                    const color = loadColor(s.load);
+                    const pct = Math.min(100, s.load);
+                    return (
+                      <div className="ll-row" key={s.name}>
+                        <span className="ll-station">
+                          {s.name}
+                          <i className="ll-tip">{s.name}</i>
+                        </span>
+                        <div className="ll-bar-track">
+                          <div
+                            className="ll-bar"
+                            style={{
+                              width: `${pct}%`,
+                              background: `linear-gradient(90deg, ${color}44, ${color})`,
+                            }}
+                          />
+                          <i className="ll-bar-mark" />
+                        </div>
+                        <span className="ll-value" style={{ color }}>
+                          {s.load}
+                        </span>
                       </div>
-                      <span className="ll-value" style={{ color }}>
-                        {s.load}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
