@@ -1,22 +1,25 @@
 /**
  * 场景页 —— 节假日/大型活动预测结果展示页
  *
- * 布局（方案 A：时间叙事为主，空间为辅）：
- *   ┌──────────┬──────────────────────┬────────────┐
- *   │  侧边栏   │  中区：预测时间轴      │  右栏：     │
- *   │          │  (横向时间线+节点)     │  ① 概览卡  │
- *   │          │                      │  ② 小地图  │
- *   │          │                      │  ③ 重点站  │
- *   │          │                      │  ④ 结论    │
- *   └──────────┴──────────────────────┴────────────┘
+ * 布局（时间叙事为主，空间为辅）：
+ *   ┌──────────┬──────────────────────────────┬────────────┐
+ *   │  侧边栏   │ 中区（纵向三段）：             │  右栏：     │
+ *   │          │  ① 场景 KPI 横幅（含倒计时）    │  ① 管控预案 │
+ *   │          │  ② 预测时间轴 + 分时曲线        │  ② 小地图   │
+ *   │          │  ③ 逐日客流 + 线路压力 双卡     │  ③ 重点站   │
+ *   │          │                              │  ④ 结论    │
+ *   └──────────┴──────────────────────────────┴────────────┘
  *
- * 中区时间轴 + 右栏面板 = 中右合并为一个场景展示区。
+ * days / lines / measures 均为可选字段，缺失时对应模块自动不渲染。
  */
 
 import { useEffect, useState } from "react";
 import { loadData } from "@/config/data-source";
 import type { SceneDetail, SceneDetailMap } from "./types";
+import SceneKpiBar from "./SceneKpiBar";
 import SceneTimeline from "./SceneTimeline";
+import SceneDailyChart from "./SceneDailyChart";
+import SceneLinePressure from "./SceneLinePressure";
 import ScenePanel from "./ScenePanel";
 import "./ScenePage.css";
 
@@ -43,15 +46,32 @@ export default function ScenePage({ sceneId }: { sceneId: string }) {
 
   return (
     <div className="scene-page">
-      {/* 中区：预测时间轴 */}
-      <div className="scene-page__timeline">
-        <SceneTimeline
-          title={detail.title}
-          date={detail.date}
-          venue={detail.venue}
-          nodes={detail.timeline}
-          hourly={detail.hourly}
-        />
+      {/* 中区：KPI 横幅 + 时间轴 + 底部双卡 */}
+      <div className="scene-page__main">
+        <SceneKpiBar detail={detail} />
+        <div className="scene-page__timeline">
+          <SceneTimeline
+            title={detail.title}
+            date={detail.date}
+            venue={detail.venue}
+            nodes={detail.timeline}
+            hourly={detail.hourly}
+          />
+        </div>
+        {(detail.days || detail.lines) && (
+          <div className="scene-page__bottom">
+            {detail.days && (
+              <div className="scene-page__bottom-item scene-page__bottom-item--days">
+                <SceneDailyChart days={detail.days} />
+              </div>
+            )}
+            {detail.lines && (
+              <div className="scene-page__bottom-item">
+                <SceneLinePressure lines={detail.lines} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 右栏：预测详情面板（含小地图） */}

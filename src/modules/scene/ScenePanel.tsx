@@ -1,11 +1,13 @@
 /**
  * 场景预测面板 —— 节假日/大型活动页的右栏
  *
- * 三块（全是"预测结果展示"，零决策建议）：
- *   ① 倒计时 + 峰值卡（时间锚点）
- *   ② 重点车站预测值（前 8，横向条 + 可点击联动地图）
- *   ③ 预测结论（纯客观结论，标签化）
+ * 四块：
+ *   ① 管控预案（加开临客/延长运营/分级限流/人员·备车保障）
+ *   ② 小地图（相关站点聚焦）
+ *   ③ 重点车站预测值（横向条 + 可点击联动地图）
+ *   ④ 预测结论（标签化）
  *
+ * 倒计时与核心指标已上移至中区顶部的 SceneKpiBar 横幅。
  * 数据：来自 scene-detail.json（经 loadData 加载，可切 API）。
  */
 
@@ -13,16 +15,49 @@ import { useEffect, useMemo, useState } from "react";
 import PanelCard from "@/components/PanelCard";
 import MetroMap from "@/modules/metro-map/MetroMap";
 import { loadData } from "@/config/data-source";
-import type { SceneDetail } from "./types";
+import type { SceneDetail, SceneMeasure } from "./types";
 import "./ScenePanel.css";
 
-/** 倒计时：返回距目标日期的天数（今天=0，未来为正，过去为负） */
-function daysUntil(dateStr: string, now: Date): number {
-  const [m, d] = dateStr.split("-").map(Number);
-  if (!m || !d) return 0;
-  const target = new Date(now.getFullYear(), m - 1, d);
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.round((target.getTime() - today.getTime()) / 86400000);
+/** 措施图标（train/clock/gate/staff/bus 五类，currentColor 跟随配色） */
+function MeasureIcon({ kind }: { kind: SceneMeasure["icon"] }) {
+  return (
+    <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+      {kind === "train" && (
+        <>
+          <rect x="3" y="2" width="10" height="9" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M5.5 11 4 14M10.5 11 12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M5.5 5.5h5M5.5 8h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
+        </>
+      )}
+      {kind === "clock" && (
+        <>
+          <circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M8 4.6V8l2.4 1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </>
+      )}
+      {kind === "gate" && (
+        <>
+          <path d="M3 13V7a5 5 0 0 1 10 0v6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M1.5 13h13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M6.4 13v-3a1.6 1.6 0 0 1 3.2 0v3" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
+        </>
+      )}
+      {kind === "staff" && (
+        <>
+          <circle cx="8" cy="4.4" r="2.4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M3.4 13.6c0-2.9 2-4.8 4.6-4.8s4.6 1.9 4.6 4.8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </>
+      )}
+      {kind === "bus" && (
+        <>
+          <rect x="2.5" y="3.5" width="11" height="8" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M2.5 8h11" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
+          <circle cx="5.4" cy="13" r="1.1" fill="currentColor" />
+          <circle cx="10.6" cy="13" r="1.1" fill="currentColor" />
+        </>
+      )}
+    </svg>
+  );
 }
 
 export default function ScenePanel({
@@ -51,14 +86,6 @@ export default function ScenePanel({
       .catch((e: Error) => setError(e.message));
   }, [sceneId]);
 
-  // 倒计时（每秒刷新，接近当天时体验更真实）
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const days = detail ? daysUntil(detail.date, now) : 0;
   // 小地图聚焦站点（memo 固定引用，避免视野被反复重置）
   const focusStations = useMemo(
     () => (detail ? detail.stations.slice(0, 5).map((s) => s.name) : undefined),
@@ -94,35 +121,26 @@ export default function ScenePanel({
 
   return (
     <div className="scene-panel">
-      {/* ① 倒计时 + 峰值卡 */}
-      <div className="scene-panel__slot scene-panel__slot--metrics">
-        <PanelCard title="预测概览">
-          <div className="sp-countdown">
-            <span className="sp-countdown__label">
-              {detail.type === "event" ? "距活动" : "距节日"}
-            </span>
-            <span className={`sp-countdown__num ${days === 0 ? "is-today" : ""}`}>
-              {days === 0 ? "今天" : days > 0 ? `${days} 天` : "已过"}
-            </span>
-          </div>
-          <div className="sp-metrics">
-            <div className="sp-metric">
-              <span className="sp-metric__label">预测总客流</span>
-              <span className="sp-metric__value">{detail.metrics.total}</span>
+      {/* ① 管控预案 */}
+      <div className="scene-panel__slot scene-panel__slot--measures">
+        <PanelCard title="管控预案">
+          {detail.measures && detail.measures.length > 0 ? (
+            <div className="sp-measures">
+              {detail.measures.map((m) => (
+                <div className="sp-measure" key={m.title}>
+                  <span className="sp-measure__icon">
+                    <MeasureIcon kind={m.icon} />
+                  </span>
+                  <div className="sp-measure__body">
+                    <span className="sp-measure__title">{m.title}</span>
+                    <span className="sp-measure__detail">{m.detail}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="sp-metric">
-              <span className="sp-metric__label">预测峰值时段</span>
-              <span className="sp-metric__value">{detail.metrics.peakTime}</span>
-            </div>
-            <div className="sp-metric">
-              <span className="sp-metric__label">预测峰值客流</span>
-              <span className="sp-metric__value sp-metric__value--peak">{detail.metrics.peak}</span>
-            </div>
-            <div className="sp-metric">
-              <span className="sp-metric__label">同比去年同期</span>
-              <span className="sp-metric__value sp-metric__value--yoy">{detail.metrics.yoy}</span>
-            </div>
-          </div>
+          ) : (
+            <div className="panel-loading">暂无预案数据</div>
+          )}
         </PanelCard>
       </div>
 
@@ -164,7 +182,7 @@ export default function ScenePanel({
         </PanelCard>
       </div>
 
-      {/* ③ 预测结论 */}
+      {/* ④ 预测结论 */}
       <div className="scene-panel__slot scene-panel__slot--conclusions">
         <PanelCard title="预测结论">
           <div className="sp-conclusions">
@@ -180,3 +198,4 @@ export default function ScenePanel({
     </div>
   );
 }
+

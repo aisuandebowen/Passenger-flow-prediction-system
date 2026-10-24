@@ -1,0 +1,100 @@
+/* 线路压力预测（横向条形排行） */
+
+.slp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.slp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  min-height: 19px;
+  line-height: 1.15;
+}
+
+.slp-name {
+  flex: none;
+  width: 5em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.63em;
+  color: var(--dv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slp-name i {
+  flex: none;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 1px;
+}
+
+.slp-bar {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 0.38em;
+  background: rgba(48, 97, 219, 0.16);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.slp-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* 100% 饱和参考线 */
+.slp-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.slp-row b {
+  flex: none;
+  width: 3em;
+  font-size: 0.6em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.slp-delta {
+  flex: none;
+  width: 3.2em;
+  font-size: 0.56em;
+  color: var(--dv-danger, #ea580c);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.slp-foot {
+  display: flex;
+  gap: 1.2em;
+  margin-top: 0.35em;
+  font-size: 0.52em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+}
+
+.slp-foot__line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.slp-foot__line i {
+  width: 0.7em;
+  height: 0.45em;
+  border-radius: 1px;
+}

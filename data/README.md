@@ -94,6 +94,43 @@
 
 24 小时分时客流（进站/出站），预留给后续的趋势面板使用。
 
+## 场景页（节假日/大型活动）数据
+
+### scene-menus.json — 场景菜单
+
+```jsonc
+{ "holidays": [ { "id": "realtime", "title": "五一节", "date": "05-01" } ],
+  "events":   [ { "id": "alarm-center", "title": "邓紫棋演唱会", "date": "05-18", "venue": "..." } ] }
+```
+
+### scene-detail.json — 场景预测详情（id -> 详情）
+
+每个场景一个 key（may-day / dragon-boat / mid-autumn / gemin-concert / jay-concert / ice-festival）。
+字段除原有 7 项外，新增 4 个可选字段（缺失时对应模块自动不渲染）：
+
+```jsonc
+{ "title": "五一节客流预测", "type": "holiday",          // holiday / event
+  "date": "05-01",
+  "metrics": { "total": "1850万", "peakTime": "10:00", "peak": "96万", "yoy": "+12.3%" },  // KPI 横幅指标卡
+  "timeline": [ { "t": "当天 10:00", "label": "预测峰值", "value": "96万", "peak": true } ], // 中区时间轴节点
+  "hourly":  { "xAxis": [...24h], "forecast": [...], "lastYear": [...] },                  // 分时预测 vs 去年
+  "stations": [ { "name": "天安门东", "value": 89000, "yoy": "+28%" } ],                   // 右栏重点站
+  "conclusions": ["..."],
+
+  "days": [                                                // 中区底部「逐日客流预测」柱状图（可选）
+    { "date": "05-01", "label": "周五", "total": 1850, "peak": true }   // total 万人次；peak=全期峰值日
+  ],
+  "lines": [                                               // 中区底部「线路压力预测」排行（可选）
+    { "id": "M1", "name": "1号线", "color": "#C33831", "load": 128, "delta": "+31%" }
+    // load 预计满载率%（>100 红 / ≥90 黄 / 其余绿）；delta 较平日增量；color 官方线路色
+  ],
+  "measures": [                                            // 右栏「管控预案」（可选）
+    { "icon": "train", "title": "加开临客", "detail": "1/2/8/10 号线累计加开临客 36 列" }
+    // icon: train 加开临客 / clock 延长运营 / gate 限流 / staff 人员保障 / bus 备用车
+  ],
+  "kpi": { "lines": 12, "limitStations": 9 } }             // KPI 横幅末卡：影响线路数 / 建议限流站数（可选）
+```
+
 ## 车站管理页（station-manage）数据
 
 车站管理页的 4 个数据文件。`network` 与 `lines.*` 同构，后端可各自独立出接口；

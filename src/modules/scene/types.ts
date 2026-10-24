@@ -48,6 +48,47 @@ export interface SceneHourly {
   lastYear: number[];
 }
 
+/** 逐日客流预测（节假日假期逐日 / 活动前中后逐日） */
+export interface SceneDay {
+  /** 日期（MM-DD） */
+  date: string;
+  /** 日标签（如 "周四" / "演出前" / "返程日"） */
+  label: string;
+  /** 当日预测总客流（万人次） */
+  total: number;
+  /** 是否全期峰值日 */
+  peak?: boolean;
+}
+
+/** 节假日/活动期间线路压力预测（排行展示） */
+export interface SceneLinePressureItem {
+  /** 线路 id（与地图数据一致，如 M1） */
+  id: string;
+  name: string;
+  /** 官方线路色 */
+  color: string;
+  /** 预计满载率（%） */
+  load: number;
+  /** 较平日增量（如 "+31%"） */
+  delta: string;
+}
+
+/** 管控预案措施 */
+export interface SceneMeasure {
+  /** 措施类型图标：train 加开临客 / clock 延长运营 / gate 分级限流 / staff 人员保障 / bus 备用车 */
+  icon: "train" | "clock" | "gate" | "staff" | "bus";
+  title: string;
+  detail: string;
+}
+
+/** 场景 KPI 横幅附加指标 */
+export interface SceneKpiExtra {
+  /** 预计影响线路数 */
+  lines: number;
+  /** 建议启动限流车站数 */
+  limitStations: number;
+}
+
 /** 场景预测详情（scene-detail.json 里按 id 索引的一项） */
 export interface SceneDetail {
   title: string;
@@ -64,6 +105,14 @@ export interface SceneDetail {
   hourly: SceneHourly;
   stations: SceneStation[];
   conclusions: string[];
+  /** 逐日客流预测（可选，无则中区不渲染该卡） */
+  days?: SceneDay[];
+  /** 线路压力预测（可选） */
+  lines?: SceneLinePressureItem[];
+  /** 管控预案（可选，无则右栏退回预测概览卡） */
+  measures?: SceneMeasure[];
+  /** KPI 横幅附加指标（可选） */
+  kpi?: SceneKpiExtra;
 }
 
 /** scene-detail.json 整体：id -> 详情 */

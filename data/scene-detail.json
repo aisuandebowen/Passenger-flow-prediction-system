@@ -167,6 +167,104 @@
         32,
         34
       ]
+    },
+    "days": [
+      {
+        "date": "05-01",
+        "label": "周五",
+        "total": 1850,
+        "peak": true
+      },
+      {
+        "date": "05-02",
+        "label": "周六",
+        "total": 1620
+      },
+      {
+        "date": "05-03",
+        "label": "周日",
+        "total": 1480
+      },
+      {
+        "date": "05-04",
+        "label": "周一",
+        "total": 1360
+      },
+      {
+        "date": "05-05",
+        "label": "周二·返程",
+        "total": 1710
+      }
+    ],
+    "lines": [
+      {
+        "id": "M1",
+        "name": "1号线",
+        "color": "#C33831",
+        "load": 128,
+        "delta": "+31%"
+      },
+      {
+        "id": "M8",
+        "name": "8号线",
+        "color": "#009C6C",
+        "load": 121,
+        "delta": "+38%"
+      },
+      {
+        "id": "M2",
+        "name": "2号线",
+        "color": "#01609A",
+        "load": 116,
+        "delta": "+24%"
+      },
+      {
+        "id": "M10",
+        "name": "10号线",
+        "color": "#009AC0",
+        "load": 112,
+        "delta": "+19%"
+      },
+      {
+        "id": "M4",
+        "name": "4号线",
+        "color": "#008E9A",
+        "load": 104,
+        "delta": "+17%"
+      },
+      {
+        "id": "M6",
+        "name": "6号线",
+        "color": "#D39600",
+        "load": 98,
+        "delta": "+12%"
+      }
+    ],
+    "measures": [
+      {
+        "icon": "train",
+        "title": "加开临客",
+        "detail": "1/2/8/10 号线累计加开临客 36 列"
+      },
+      {
+        "icon": "clock",
+        "title": "延长运营",
+        "detail": "全网延长运营 30 分钟，重点线 60 分钟"
+      },
+      {
+        "icon": "gate",
+        "title": "分级限流",
+        "detail": "天安门东/西等 9 站启动 A/B 级限流"
+      },
+      {
+        "icon": "staff",
+        "title": "加强保障",
+        "detail": "重点站加派站务与安保 420 人次"
+      }
+    ],
+    "kpi": {
+      "lines": 12,
+      "limitStations": 9
     }
   },
   "dragon-boat": {
@@ -337,6 +435,94 @@
         27,
         26
       ]
+    },
+    "days": [
+      {
+        "date": "05-31",
+        "label": "周日",
+        "total": 980
+      },
+      {
+        "date": "06-01",
+        "label": "周一·端午",
+        "total": 1120,
+        "peak": true
+      },
+      {
+        "date": "06-02",
+        "label": "周二",
+        "total": 1040
+      }
+    ],
+    "lines": [
+      {
+        "id": "M8",
+        "name": "8号线",
+        "color": "#009C6C",
+        "load": 118,
+        "delta": "+29%"
+      },
+      {
+        "id": "M1",
+        "name": "1号线",
+        "color": "#C33831",
+        "load": 109,
+        "delta": "+21%"
+      },
+      {
+        "id": "M2",
+        "name": "2号线",
+        "color": "#01609A",
+        "load": 103,
+        "delta": "+16%"
+      },
+      {
+        "id": "M6",
+        "name": "6号线",
+        "color": "#D39600",
+        "load": 96,
+        "delta": "+13%"
+      },
+      {
+        "id": "M10",
+        "name": "10号线",
+        "color": "#009AC0",
+        "load": 92,
+        "delta": "+10%"
+      },
+      {
+        "id": "M4",
+        "name": "4号线",
+        "color": "#008E9A",
+        "load": 87,
+        "delta": "+8%"
+      }
+    ],
+    "measures": [
+      {
+        "icon": "train",
+        "title": "加开临客",
+        "detail": "8/1/2 号线加开临客 22 列"
+      },
+      {
+        "icon": "clock",
+        "title": "延长运营",
+        "detail": "全网延长运营 30 分钟"
+      },
+      {
+        "icon": "gate",
+        "title": "分级限流",
+        "detail": "什刹海/南锣鼓巷等 6 站分级限流"
+      },
+      {
+        "icon": "staff",
+        "title": "加强保障",
+        "detail": "重点站加派站务与安保 260 人次"
+      }
+    ],
+    "kpi": {
+      "lines": 9,
+      "limitStations": 6
     }
   },
   "mid-autumn": {
@@ -507,6 +693,94 @@
         45,
         38
       ]
+    },
+    "days": [
+      {
+        "date": "09-25",
+        "label": "周五",
+        "total": 1060,
+        "peak": true
+      },
+      {
+        "date": "09-26",
+        "label": "周六·中秋",
+        "total": 990
+      },
+      {
+        "date": "09-27",
+        "label": "周日",
+        "total": 1020
+      }
+    ],
+    "lines": [
+      {
+        "id": "M1",
+        "name": "1号线",
+        "color": "#C33831",
+        "load": 112,
+        "delta": "+23%"
+      },
+      {
+        "id": "M10",
+        "name": "10号线",
+        "color": "#009AC0",
+        "load": 106,
+        "delta": "+18%"
+      },
+      {
+        "id": "M2",
+        "name": "2号线",
+        "color": "#01609A",
+        "load": 101,
+        "delta": "+15%"
+      },
+      {
+        "id": "M6",
+        "name": "6号线",
+        "color": "#D39600",
+        "load": 94,
+        "delta": "+11%"
+      },
+      {
+        "id": "M4",
+        "name": "4号线",
+        "color": "#008E9A",
+        "load": 89,
+        "delta": "+9%"
+      },
+      {
+        "id": "M8",
+        "name": "8号线",
+        "color": "#009C6C",
+        "load": 84,
+        "delta": "+7%"
+      }
+    ],
+    "measures": [
+      {
+        "icon": "train",
+        "title": "加开临客",
+        "detail": "1/10/2 号线加开临客 18 列"
+      },
+      {
+        "icon": "clock",
+        "title": "延长运营",
+        "detail": "全网延长运营 30 分钟"
+      },
+      {
+        "icon": "gate",
+        "title": "分级限流",
+        "detail": "前门/王府井等 5 站分级限流"
+      },
+      {
+        "icon": "bus",
+        "title": "备用车",
+        "detail": "库内备车 6 组随时上线"
+      }
+    ],
+    "kpi": {
+      "lines": 8,
+      "limitStations": 5
     }
   },
   "gemin-concert": {
@@ -678,6 +952,94 @@
         39,
         37
       ]
+    },
+    "days": [
+      {
+        "date": "05-17",
+        "label": "演出前",
+        "total": 1180
+      },
+      {
+        "date": "05-18",
+        "label": "演出当天",
+        "total": 1460,
+        "peak": true
+      },
+      {
+        "date": "05-19",
+        "label": "演出次日",
+        "total": 1090
+      }
+    ],
+    "lines": [
+      {
+        "id": "M14",
+        "name": "14号线",
+        "color": "#D4A7A2",
+        "load": 126,
+        "delta": "+42%"
+      },
+      {
+        "id": "M10",
+        "name": "10号线",
+        "color": "#009AC0",
+        "load": 114,
+        "delta": "+26%"
+      },
+      {
+        "id": "M1",
+        "name": "1号线",
+        "color": "#C33831",
+        "load": 103,
+        "delta": "+14%"
+      },
+      {
+        "id": "M6",
+        "name": "6号线",
+        "color": "#D39600",
+        "load": 92,
+        "delta": "+9%"
+      },
+      {
+        "id": "M7",
+        "name": "7号线",
+        "color": "#FBC774",
+        "load": 88,
+        "delta": "+7%"
+      },
+      {
+        "id": "M9",
+        "name": "9号线",
+        "color": "#8FC120",
+        "load": 81,
+        "delta": "+5%"
+      }
+    ],
+    "measures": [
+      {
+        "icon": "train",
+        "title": "加开临客",
+        "detail": "散场阶段 14/10 号线加开 14 列"
+      },
+      {
+        "icon": "clock",
+        "title": "延长运营",
+        "detail": "14/10 号线延长运营 40 分钟"
+      },
+      {
+        "icon": "gate",
+        "title": "散场限流",
+        "detail": "园博园门等 3 站散场分级放行"
+      },
+      {
+        "icon": "staff",
+        "title": "加强保障",
+        "detail": "散场通道加派引导员 180 人次"
+      }
+    ],
+    "kpi": {
+      "lines": 6,
+      "limitStations": 3
     }
   },
   "jay-concert": {
@@ -849,6 +1211,94 @@
         42,
         41
       ]
+    },
+    "days": [
+      {
+        "date": "06-20",
+        "label": "演出前",
+        "total": 1230
+      },
+      {
+        "date": "06-21",
+        "label": "演出当天",
+        "total": 1580,
+        "peak": true
+      },
+      {
+        "date": "06-22",
+        "label": "演出次日",
+        "total": 1150
+      }
+    ],
+    "lines": [
+      {
+        "id": "M8",
+        "name": "8号线",
+        "color": "#009C6C",
+        "load": 129,
+        "delta": "+46%"
+      },
+      {
+        "id": "M10",
+        "name": "10号线",
+        "color": "#009AC0",
+        "load": 117,
+        "delta": "+28%"
+      },
+      {
+        "id": "M5",
+        "name": "5号线",
+        "color": "#A4217F",
+        "load": 104,
+        "delta": "+15%"
+      },
+      {
+        "id": "M15",
+        "name": "15号线",
+        "color": "#68347E",
+        "load": 96,
+        "delta": "+12%"
+      },
+      {
+        "id": "M2",
+        "name": "2号线",
+        "color": "#01609A",
+        "load": 90,
+        "delta": "+8%"
+      },
+      {
+        "id": "M6",
+        "name": "6号线",
+        "color": "#D39600",
+        "load": 85,
+        "delta": "+6%"
+      }
+    ],
+    "measures": [
+      {
+        "icon": "train",
+        "title": "加开临客",
+        "detail": "散场阶段 8/10 号线加开 16 列"
+      },
+      {
+        "icon": "clock",
+        "title": "延长运营",
+        "detail": "8/10 号线延长运营 45 分钟"
+      },
+      {
+        "icon": "gate",
+        "title": "散场限流",
+        "detail": "奥体中心等 4 站散场分级放行"
+      },
+      {
+        "icon": "bus",
+        "title": "备用车",
+        "detail": "库内备车 5 组随时上线"
+      }
+    ],
+    "kpi": {
+      "lines": 6,
+      "limitStations": 4
     }
   },
   "ice-festival": {
@@ -1020,6 +1470,94 @@
         23,
         21
       ]
+    },
+    "days": [
+      {
+        "date": "12-19",
+        "label": "开幕前",
+        "total": 890
+      },
+      {
+        "date": "12-20",
+        "label": "开幕当天",
+        "total": 1340,
+        "peak": true
+      },
+      {
+        "date": "12-21",
+        "label": "次日",
+        "total": 960
+      }
+    ],
+    "lines": [
+      {
+        "id": "S1",
+        "name": "S1线",
+        "color": "#B45924",
+        "load": 117,
+        "delta": "+35%"
+      },
+      {
+        "id": "M6",
+        "name": "6号线",
+        "color": "#D39600",
+        "load": 108,
+        "delta": "+22%"
+      },
+      {
+        "id": "M11",
+        "name": "11号线",
+        "color": "#EF796B",
+        "load": 99,
+        "delta": "+17%"
+      },
+      {
+        "id": "M1",
+        "name": "1号线",
+        "color": "#C33831",
+        "load": 93,
+        "delta": "+11%"
+      },
+      {
+        "id": "M2",
+        "name": "2号线",
+        "color": "#01609A",
+        "load": 86,
+        "delta": "+7%"
+      },
+      {
+        "id": "M4",
+        "name": "4号线",
+        "color": "#008E9A",
+        "load": 80,
+        "delta": "+5%"
+      }
+    ],
+    "measures": [
+      {
+        "icon": "train",
+        "title": "加开临客",
+        "detail": "S1/6 号线加开临客 12 列"
+      },
+      {
+        "icon": "clock",
+        "title": "延长运营",
+        "detail": "S1/6 号线延长运营 30 分钟"
+      },
+      {
+        "icon": "gate",
+        "title": "分级限流",
+        "detail": "金安桥等 3 站分级限流"
+      },
+      {
+        "icon": "staff",
+        "title": "加强保障",
+        "detail": "冰雪节会场接驳引导 150 人次"
+      }
+    ],
+    "kpi": {
+      "lines": 5,
+      "limitStations": 3
     }
   }
 }

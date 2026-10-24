@@ -1,4 +1,4 @@
-/* 场景页 —— 中区时间轴 + 右栏面板 */
+/* 场景页 —— 中区（KPI + 时间轴 + 底部双卡） + 右栏面板 */
 
 .scene-page {
   display: flex;
@@ -21,9 +21,33 @@
   color: var(--dv-danger);
 }
 
-/* 中区：预测时间轴（flex:1 自适应，侧栏折叠时左扩） */
+/* 中区：纵向三段（KPI 横幅 / 时间轴 / 底部双卡） */
+.scene-page__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 中段：预测时间轴（flex:1 自适应） */
 .scene-page__timeline {
   flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* 底部：逐日客流 + 线路压力 双卡 */
+.scene-page__bottom {
+  flex: 0 0 242px;
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.scene-page__bottom-item {
+  position: relative;
+  flex: 1 1 0;
   min-width: 0;
 }
 
