@@ -29,6 +29,7 @@ import LineLoadPanel from "@/modules/panels/panel6/LineLoadPanel";
 import LineStatusKpi from "@/modules/panels/LineStatusKpi";
 import StationKpi from "@/modules/panels/StationKpi";
 import ScenePage from "@/modules/scene/ScenePage";
+import EventPage from "@/modules/event/EventPage";
 import { loadData } from "@/config/data-source";
 import type { SceneMenusData } from "@/modules/scene/types";
 import { layout } from "@/config/layout";
@@ -57,6 +58,8 @@ export default function App() {
 
   // 场景菜单（节假日/大型活动）——用于判断选中菜单是否为场景页
   const [sceneIds, setSceneIds] = useState<Set<string>>(new Set());
+  // 大型活动菜单 id（独立的活动保障视图 EventPage）
+  const [eventIds, setEventIds] = useState<Set<string>>(new Set());
   useEffect(() => {
     loadData<SceneMenusData>("sceneMenus")
       .then((d) => {
@@ -64,6 +67,7 @@ export default function App() {
         d.holidays.forEach((s) => ids.add(s.id));
         d.events.forEach((s) => ids.add(s.id));
         setSceneIds(ids);
+        setEventIds(new Set(d.events.map((s) => s.id)));
       })
       .catch(() => {
         /* 场景菜单加载失败不影响其他页面 */
@@ -137,6 +141,9 @@ export default function App() {
             <div className="app__lineload">
               <LineLoadPanel />
             </div>
+          ) : eventIds.has(activeMenu) ? (
+            // 大型活动：场馆中心的保障作战视图（与节假日页面完全独立）
+            <EventPage eventId={activeMenu} />
           ) : sceneIds.has(activeMenu) ? (
             // 节假日/大型活动：中区预测时间轴 + 右栏预测详情面板
             <ScenePage sceneId={activeMenu} />

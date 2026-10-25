@@ -1,0 +1,666 @@
+/* 大型活动页 —— 场馆中心保障视图（ev- 前缀） */
+
+/* ===== 页面骨架 ===== */
+.event-page {
+  display: flex;
+  gap: 12px;
+  height: 100%;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.event-page--loading,
+.event-page--error {
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125em;
+  color: var(--dv-sub);
+}
+
+.event-page--error {
+  color: var(--dv-danger);
+}
+
+.event-page__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-page__pulse {
+  position: relative; /* PanelCard 是 absolute inset:0：槽位必须是定位父级 */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.event-page__bottom {
+  flex: 0 0 264px;
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.event-page__bottom-item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.event-page__bottom-item--heat {
+  flex: 1.15 1 0;
+}
+
+.event-page__side {
+  flex: 0 0 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-page__rings {
+  position: relative; /* PanelCard 是 absolute inset:0：槽位必须是定位父级 */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.event-page__monitor {
+  position: relative; /* PanelCard 是 absolute inset:0：槽位必须是定位父级 */
+  flex: 0 0 250px;
+  min-height: 0;
+}
+
+/* ===== ① 活动档案 + 阶段条 ===== */
+.ev-dossier {
+  position: relative;
+  flex: 0 0 104px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.ev-dossier__id {
+  flex: none;
+  width: 11em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2em;
+  padding: 0 0.8em;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(48, 97, 219, 0.92), rgba(90, 140, 255, 0.85));
+  border: 1px solid var(--dv-accent, #789eff);
+  border-radius: 8px 0 0 8px;
+}
+
+.ev-dossier__name {
+  font-size: 0.87em;
+  font-weight: 700;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.ev-dossier__sub {
+  font-size: 0.56em;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.ev-dossier__mid {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.55em 0.8em;
+  background: rgba(4, 20, 36, 0.82);
+  border: 1px solid var(--dv-panel-border);
+  border-left: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4em;
+  overflow: hidden;
+}
+
+.ev-phases {
+  display: flex;
+  gap: 0.25em;
+}
+
+.ev-phase {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.3em 0.45em;
+  font: inherit;
+  line-height: 1.25;
+  text-align: left;
+  border: 1px solid rgba(120, 158, 255, 0.35);
+  border-radius: 5px;
+  background: rgba(48, 97, 219, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ev-phase small {
+  display: block;
+  font-size: 0.52em;
+  color: var(--dv-sub);
+  letter-spacing: 1px;
+}
+
+.ev-phase b {
+  display: block;
+  font-size: 0.65em;
+  margin-top: 0.15em;
+  font-weight: 600;
+  color: var(--dv-text);
+}
+
+.ev-phase em {
+  display: block;
+  font-style: normal;
+  font-size: 0.5em;
+  color: var(--dv-sub);
+  margin-top: 0.1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-phase.is-done b {
+  color: #6b87b8;
+}
+
+.ev-phase.is-done::after {
+  content: "";
+  position: absolute;
+  right: 0.35em;
+  top: 0.4em;
+  width: 0.3em;
+  height: 0.16em;
+  border-left: 2px solid #4ade80;
+  border-bottom: 2px solid #4ade80;
+  transform: rotate(-45deg);
+}
+
+.ev-phase.is-cur {
+  background: linear-gradient(180deg, rgba(255, 209, 102, 0.2), rgba(255, 209, 102, 0.06));
+  border-color: var(--dv-transfer, #ffd166);
+  box-shadow: 0 0 14px rgba(255, 209, 102, 0.25);
+}
+
+.ev-phase.is-cur b {
+  color: var(--dv-transfer, #ffd166);
+}
+
+.ev-phase.is-cur em {
+  color: #ffe4a3;
+}
+
+.ev-phase.is-next b {
+  color: var(--dv-sub);
+}
+
+.ev-phase.is-view {
+  outline: 1.5px solid rgba(232, 239, 255, 0.65);
+  outline-offset: -1.5px;
+}
+
+.ev-phase:focus-visible {
+  outline: 2px solid var(--dv-accent);
+  outline-offset: 1px;
+}
+
+.ev-dossier__nums {
+  display: flex;
+  gap: 1em;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.ev-num {
+  font-size: 0.54em;
+  color: var(--dv-sub);
+}
+
+.ev-num b {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--dv-title);
+  margin-left: 0.35em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ev-num--gold {
+  color: var(--dv-transfer, #ffd166) !important;
+}
+
+.ev-num--danger {
+  color: var(--dv-danger, #ea580c) !important;
+}
+
+.ev-dossier__right {
+  flex: none;
+  width: 14.5em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25em;
+  padding: 0 0.8em;
+  background: rgba(4, 20, 36, 0.82);
+  border: 1px solid var(--dv-panel-border);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+
+.ev-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+}
+
+.ev-clock span {
+  font-size: 0.54em;
+  color: var(--dv-sub);
+}
+
+.ev-clock b {
+  font-size: 1.13em;
+  color: var(--dv-transfer, #ffd166);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ev-clock__note {
+  font-size: 0.5em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== ② 双向脉冲 ===== */
+.ev-pulse-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.ev-pulse {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* SVG 是 flex 子项：必须解除 min-width:auto（内在宽 = viewBox 比例 × 高度，否则撑爆面板） */
+  min-width: 0;
+}
+
+/* T+0 参考线标签（HTML overlay：避免非均匀缩放拉伸 SVG 文字） */
+.ev-pulse__t0 {
+  position: absolute;
+  top: 0.2em;
+  transform: translateX(4px);
+  font-size: 0.52em;
+  color: var(--dv-transfer, #ffd166);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ev-pulse__ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.44em;
+  color: var(--dv-sub);
+  font-variant-numeric: tabular-nums;
+  padding: 0.15em 0 0;
+}
+
+.ev-pulse__axis {
+  display: flex;
+  gap: 1.2em;
+  font-size: 0.5em;
+  color: var(--dv-sub);
+}
+
+.ev-legend {
+  display: inline-flex;
+  gap: 0.9em;
+  font-size: 0.6em;
+  color: var(--dv-sub);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.ev-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.ev-legend__item i {
+  width: 0.9em;
+  height: 0.5em;
+  border-radius: 2px;
+}
+
+/* ===== ④ 分时压力热力 ===== */
+.ev-heat {
+  display: grid;
+  gap: 2px;
+  font-size: 0.46em;
+}
+
+.ev-heat__t {
+  color: var(--dv-sub);
+  text-align: center;
+  line-height: 1.6em;
+  white-space: nowrap;
+}
+
+.ev-heat__st {
+  color: var(--dv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 2.2em;
+}
+
+.ev-heat__c {
+  height: 2.2em;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(2, 8, 20, 0.85);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: rgba(74, 222, 128, 0.12);
+}
+
+.ev-heat__c.is-hi {
+  color: #fff;
+  box-shadow: 0 0 6px rgba(234, 88, 12, 0.8);
+}
+
+.ev-heat__c.is-near {
+  color: rgba(2, 8, 20, 0.7);
+}
+
+.ev-heat__legend {
+  display: flex;
+  gap: 1em;
+  margin-top: 0.45em;
+  font-size: 0.5em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+}
+
+.ev-heat__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.ev-heat__legend i {
+  width: 0.7em;
+  height: 0.45em;
+  border-radius: 1px;
+}
+
+/* ===== ⑤ 历史场次对比 ===== */
+.ev-hist {
+  display: block;
+  width: 100%;
+  height: 4.8em;
+  min-width: 0;
+}
+
+.ev-hist__labels {
+  display: flex;
+  gap: 1em;
+  font-size: 0.5em;
+  margin-top: 0.15em;
+}
+
+.ev-hist__range {
+  margin-left: auto;
+  color: var(--dv-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.ev-hist__row {
+  display: flex;
+  margin-top: 0.4em;
+  border-top: 1px dashed rgba(120, 158, 255, 0.2);
+}
+
+.ev-hist__cell {
+  flex: 1;
+  padding: 0.3em 0.15em 0;
+  text-align: center;
+  min-width: 0;
+}
+
+.ev-hist__cell small {
+  display: block;
+  font-size: 0.48em;
+  color: var(--dv-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-hist__cell b {
+  display: block;
+  font-size: 0.7em;
+  margin-top: 0.1em;
+  color: var(--dv-title);
+  font-variant-numeric: tabular-nums;
+}
+
+.ev-hist__cell em {
+  display: block;
+  font-style: normal;
+  font-size: 0.44em;
+  margin-top: 0.08em;
+  color: var(--dv-danger, #ea580c);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-hist__cell em.is-good {
+  color: #4ade80;
+}
+
+/* ===== ③ 场馆影响圈 ===== */
+.ev-rings {
+  display: block;
+  width: 100%;
+  height: 8.3em;
+  flex: none;
+  min-width: 0;
+}
+
+.ev-ring-st {
+  cursor: pointer;
+}
+
+.ev-ring-st circle {
+  cursor: pointer;
+}
+
+.ev-ring-st text {
+  fill: var(--dv-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ev-ring-st.is-on circle {
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.ev-ring-st.is-on text {
+  fill: #fff;
+  font-weight: 600;
+}
+
+.ev-cir-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.3em;
+}
+
+.ev-cir-row {
+  display: grid;
+  grid-template-columns: 2.6em 1fr 3.2em 3.4em 3.4em;
+  gap: 0.35em;
+  align-items: center;
+  min-height: 1.6em;
+  padding: 0.06em 0.15em;
+  font: inherit;
+  line-height: 1.15;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(120, 158, 255, 0.15);
+  border-radius: 0;
+  appearance: none;
+  cursor: pointer;
+}
+
+.ev-cir-row:hover {
+  background: rgba(48, 97, 219, 0.2);
+}
+
+.ev-cir-row.is-on {
+  background: rgba(48, 97, 219, 0.3);
+  box-shadow: inset 2px 0 0 var(--dv-accent, #789eff);
+}
+
+.ev-cir__ring {
+  font-size: 0.5em;
+  color: var(--dv-sub);
+}
+
+.ev-cir__name {
+  font-size: 0.6em;
+  color: var(--dv-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.ev-cir__lbs {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.ev-cir__lbs i {
+  width: 0.28em;
+  height: 0.75em;
+  border-radius: 1px;
+}
+
+.ev-cir__add {
+  font-size: 0.52em;
+  text-align: right;
+  color: var(--dv-warn, #ffa800);
+  font-variant-numeric: tabular-nums;
+}
+
+.ev-cir__gate {
+  font-size: 0.5em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ev-cir__gate.is-out {
+  color: #8fc2ff;
+}
+
+.ev-cir__gate.is-in {
+  color: #4ade80;
+}
+
+.ev-cir__gate.is-both {
+  color: var(--dv-sub);
+}
+
+.ev-cir__limit {
+  font-size: 0.5em;
+  text-align: right;
+  color: var(--dv-transfer, #ffd166);
+  white-space: nowrap;
+}
+
+/* ===== ⑥ 实时执行监测 ===== */
+.ev-mon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 100%;
+}
+
+.ev-mon__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: 1.3em;
+  font-size: 0.62em;
+}
+
+.ev-mon__name {
+  flex: none;
+  width: 8.6em;
+  color: var(--dv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-mon__bar {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 0.65em;
+  background: rgba(48, 97, 219, 0.16);
+  border-radius: 4px;
+}
+
+.ev-mon__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.ev-mon__bar > i {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.ev-mon__val {
+  flex: none;
+  width: 11em;
+  text-align: right;
+  font-size: 0.85em;
+  color: var(--dv-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.ev-mon__val b {
+  color: var(--dv-title);
+}

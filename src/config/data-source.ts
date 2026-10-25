@@ -40,6 +40,7 @@ export const LOCAL_PATHS = {
   stationDetail: "./data/station-detail.json",
   stationAlerts: "./data/station-alerts.json",
   transferPressure: "./data/transfer-pressure.json",
+  eventPlan: "./data/event-plan.json",
 } as const;
 
 /** API 接口地址（DATA_MODE='api' 时生效） */
@@ -61,6 +62,7 @@ export const API_ENDPOINTS = {
   stationDetail: "/api/station-manage/station-detail",
   stationAlerts: "/api/station-manage/alerts",
   transferPressure: "/api/station-manage/transfer-pressure",
+  eventPlan: "/api/event/plan",
 } as const;
 
 /** 数据源的 key，各模块用这个名字取数据 */

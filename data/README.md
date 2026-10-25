@@ -131,6 +131,53 @@
   "kpi": { "lines": 12, "limitStations": 9 } }             // KPI 横幅末卡：影响线路数 / 建议限流站数（可选）
 ```
 
+## 大型活动页（EventPage）数据
+
+大型活动（演唱会/冰雪节）已从场景页独立为"场馆中心保障视图"，数据单独一个文件。
+
+### event-plan.json — 活动保障方案（id -> 方案）
+
+key 与 `scene-menus.json` 的 `events[].id` 一致（gemin-concert / jay-concert / ice-festival）。
+
+```jsonc
+{ "gemin-concert": {
+  "title": "邓紫棋演唱会", "venue": "工人体育场", "date": "08-16", "dayOfWeek": "周六", "startTime": "19:30",
+  "phases": [                                          // ① 生命周期阶段条（5 段）
+    { "id": "show", "name": "演出中", "time": "19:30–21:50", "note": "在场 5.2 万" }
+  ],
+  "currentPhase": 2,                                   // 当前阶段索引（已完成✓/当前高亮/未开始）
+  "countdown": "26:14", "countdownLabel": "距 散场启动", // 右侧倒计时（接 API 后实时下发）
+  "metrics": { "audience": "5.2 万", "exitPeak": "1.8 万", "yoy": "+14%", "stations": 6 },
+  "pulse": {                                           // ② 进馆/离馆双向脉冲
+    "xAxis": ["16:30", ..., "23:40"],                  // 18 点
+    "in": [...], "out": [...],                         // 万人次/h，与 xAxis 对齐
+    "t0Index": 11,                                     // T+0 散场启动参考线索引
+    "phaseRanges": [[0,2], ...]                        // 各阶段 x 轴索引区间（点击阶段条联动色带）
+  },
+  "ringLabels": ["一环 ≤10min", "二环 ≤15min", "三环 ≤25min"],
+  "ringStations": [                                    // ③ 场馆影响圈站点
+    { "name": "工体", "lines": [{ "id": "M3", "name": "3号线", "color": "#E40035" }],
+      "ring": 0,                                       // 圈层 0/1/2
+      "exitAdd": 7200,                                 // 散场预计增量（人次）
+      "gate": "both",                                  // 闸机模式: both 双向 / out 只出不进 / in 只进不出
+      "limit": "B级限流" }
+  ],
+  "heat": {                                            // ④ 周边站分时压力热力
+    "xAxis": ["16:30", ...],                           // 每 30 分钟
+    "stations": ["工体", ...],
+    "values": [[64,78,...], ...]                       // 满载率矩阵 [站][时段]，>100 红
+  },
+  "history": {                                         // ⑤ 同场馆历史场次对比
+    "lastTitle": "2025-08 同场馆场次",
+    "xAxis": [...], "current": [...], "last": [...],   // 周边站合计进站 万人次/h
+    "compare": [ { "label": "入场人数", "cur": "5.2 万", "last": "4.6 万", "delta": "+13%", "good": false } ]
+  },
+  "monitor": {                                         // ⑥ 实时执行监测（接 API 前为演示值）
+    "updated": "21:24",
+    "items": [ { "name": "入场完成率", "cur": 79, "forecast": 100, "unit": "%" } ]
+  } } }
+```
+
 ## 车站管理页（station-manage）数据
 
 车站管理页的 4 个数据文件。`network` 与 `lines.*` 同构，后端可各自独立出接口；
